@@ -1,0 +1,22 @@
+server:
+  port: ${PROMOTION_SERVICE_PORT:8097}
+  servlet:
+    context-path: /promotion
+spring:
+  application:
+    name: promotion-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${PROMOTION_SERVICE_DB:PromotionService}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+
+

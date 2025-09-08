@@ -1,0 +1,23 @@
+server:
+  port: ${REVIEW_SERVICE_PORT:8098}
+  servlet:
+    context-path: /review
+
+spring:
+  application:
+    name: review-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${REVIEW_SERVICE_DB:ReviewService}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+
+

@@ -1,0 +1,21 @@
+server:
+  port: ${SHOP_SERVICE_PORT:8092}
+  servlet:
+    context-path: /shop
+
+spring:
+  application:
+    name: shop-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${AUTH_SERVICE_DB:ShopService}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}

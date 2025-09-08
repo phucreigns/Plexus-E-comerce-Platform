@@ -1,0 +1,22 @@
+server:
+  port: ${CART_SERVICE_PORT:8095}
+  servlet:
+    context-path: /cart
+
+spring:
+  application:
+    name: cart-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${CART_SERVICE_DB:CartService}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+

@@ -1,0 +1,16 @@
+package com.phuc.file.dto.request;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class FileRequest {
+    String name;
+    String type;
+    String url;
+    Long size;
+}
