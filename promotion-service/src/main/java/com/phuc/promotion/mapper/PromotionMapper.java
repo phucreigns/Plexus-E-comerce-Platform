@@ -1,19 +1,20 @@
 package com.phuc.promotion.mapper;
 
-import com.phuc.shop.dto.request.ShopCreateRequest;
-import com.phuc.shop.dto.request.ShopUpdateRequest;
-import com.phuc.shop.dto.response.ShopResponse;
-import com.phuc.shop.entity.Shop;
+import com.phuc.promotion.dto.request.PromotionCreationRequest;
+import com.phuc.promotion.dto.request.PromotionUpdateRequest;
+import com.phuc.promotion.dto.response.PromotionResponse;
+import com.phuc.promotion.entity.Promotion;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface PromotionMapper {
 
-    Shop toShop(ShopCreateRequest request);
+    Promotion toPromotion(PromotionCreationRequest request);
 
-    ShopResponse toShopResponse(Shop shop);
+    PromotionResponse toPromotionResponse(Promotion promotion);
 
-    void updateShop(@MappingTarget Shop shop, ShopUpdateRequest request);
+    void updatePromotion(@MappingTarget Promotion promotion, PromotionUpdateRequest request);
+
 }
 

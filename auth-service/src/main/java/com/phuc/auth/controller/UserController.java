@@ -1,10 +1,13 @@
 package com.phuc.auth.controller;
 
+import com.phuc.auth.dto.ApiResponse;
+import com.phuc.auth.dto.request.RefreshTokenRequest;
 import com.phuc.auth.dto.request.UserCreateRequest;
 import com.phuc.auth.dto.request.UserUpdateRequest;
 import com.phuc.auth.dto.response.TokenResponse;
 import com.phuc.auth.dto.response.UserResponse;
 import com.phuc.auth.service.UserService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -21,6 +24,13 @@ public class UserController {
     @GetMapping("/auth/login")
     public ResponseEntity<TokenResponse> login(@RequestParam(required = false) String code) {
         return userService.login(code);
+    }
+
+    @PostMapping("/auth/refresh")
+    public ApiResponse<TokenResponse> refresh(@RequestBody @Valid RefreshTokenRequest request) {
+        return ApiResponse.<TokenResponse>builder()
+                .result(userService.refreshToken(request))
+                .build();
     }
 
     @PostMapping("/create")

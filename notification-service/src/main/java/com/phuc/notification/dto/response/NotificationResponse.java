@@ -1,5 +1,6 @@
 package com.phuc.notification.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,12 +12,12 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NotificationResponse {
-    Long userId;
+    Long notificationId;
+    String title;
+    String content;
     String email;
-    String phoneNumber;
-    String fullName;
-    String avatarUrl;
-    String address;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
     LocalDateTime createdAt;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
     LocalDateTime updatedAt;
 }

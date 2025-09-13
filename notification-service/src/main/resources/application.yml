@@ -1,5 +1,5 @@
 server:
-  port: ${NOTIFICATION_SERVICE_PORT:8094}
+  port: ${NOTIFICATION_SERVICE_PORT:8093}
   servlet:
     context-path: /notification
 

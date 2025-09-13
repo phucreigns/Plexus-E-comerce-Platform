@@ -1,5 +1,6 @@
 package com.phuc.auth.service;
 
+import com.phuc.auth.dto.request.RefreshTokenRequest;
 import com.phuc.auth.dto.request.UserCreateRequest;
 import com.phuc.auth.dto.request.UserUpdateRequest;
 import com.phuc.auth.dto.response.TokenResponse;
@@ -12,9 +13,12 @@ import java.util.List;
 public interface UserService {
     ResponseEntity<TokenResponse> login(String code);
 
+    TokenResponse refreshToken(RefreshTokenRequest request);
+
     UserResponse createUser(UserCreateRequest request);
     UserResponse getUserById(Long id);
     List<UserResponse> getAllUsers();
     UserResponse updateUser(UserUpdateRequest request, Long userId);
     void deleteUser(Long id);
+
 }

@@ -1,11 +1,10 @@
 package com.phuc.promotion.repository;
 
-import com.phuc.shop.entity.Shop;
+import com.phuc.promotion.entity.Promotion;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.Optional;
 
-public interface PromotionRepository extends JpaRepository<Shop, Long> {
+public interface PromotionRepository extends JpaRepository<Promotion, String> {
 
-    Shop findByShopId(Long shopId);
-
-    Shop findByName(String name);
+    Optional<Promotion> findByPromoCode(String promoCode);
 }

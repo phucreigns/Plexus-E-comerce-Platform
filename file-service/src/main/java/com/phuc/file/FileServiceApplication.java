@@ -20,5 +20,6 @@ public class FileServiceApplication {
 		System.setProperty("POSTGRES_HOST", dotenv.get("POSTGRES_HOST", ""));
 		System.setProperty("POSTGRES_USERNAME", dotenv.get("POSTGRES_USERNAME", ""));
 		System.setProperty("POSTGRES_PASSWORD", dotenv.get("POSTGRES_PASSWORD", ""));
+        System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
 	}
 }

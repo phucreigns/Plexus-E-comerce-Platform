@@ -1,13 +1,12 @@
 package com.phuc.order.service;
 
-import com.phuc.order.dto.request.OrderCreateRequest;
-import com.phuc.order.dto.response.OrderResponse;
+import com.phuc.order.entity.Order;
+import java.util.List;
 
 public interface OrderService {
-
-    OrderResponse createOrder(OrderCreateRequest request);
-
-    OrderResponse getOrderById(Long orderId);
-
-    void cancelOrder(Long orderId);
+    Order createOrder(Order order);
+    Order getOrderById(Long orderId);
+    List<Order> getAllOrders();
+    Order updateOrderStatus(Long orderId, String status);
+    void deleteOrder(Long orderId);
 }

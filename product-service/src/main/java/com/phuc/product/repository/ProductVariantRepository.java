@@ -1,9 +1,7 @@
 package com.phuc.product.repository;
 
 import com.phuc.product.entity.ProductVariant;
-
 import org.springframework.data.mongodb.repository.MongoRepository;
-
 import java.util.List;
 
 public interface ProductVariantRepository extends MongoRepository<ProductVariant, Long> {

@@ -8,6 +8,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 @SpringBootApplication
 @EnableFeignClients
 public class AuthServiceApplication {
+
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.configure()
 				.directory(".")
@@ -21,7 +22,7 @@ public class AuthServiceApplication {
 		System.setProperty("POSTGRES_HOST", dotenv.get("POSTGRES_HOST", ""));
 		System.setProperty("POSTGRES_USERNAME", dotenv.get("POSTGRES_USERNAME", ""));
 		System.setProperty("POSTGRES_PASSWORD", dotenv.get("POSTGRES_PASSWORD", ""));
-
+        System.setProperty("FILE_SERVICE_URL", dotenv.get("FILE_SERVICE_URL", ""));
 
 		String auth0IssuerUri = dotenv.get("AUTH0_ISSUER_URI", "");
 		if (auth0IssuerUri.startsWith("http://")) {

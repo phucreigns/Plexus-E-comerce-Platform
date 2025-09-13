@@ -1,7 +1,11 @@
 server:
-  port: ${REVIEW_SERVICE_PORT:8098}
+  port: ${REVIEW_SERVICE_PORT:8097}
   servlet:
     context-path: /review
+
+#  data:
+#    mongodb:
+#      uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${REVIEW_SERVICE_DB:ReviewService}?authSource=admin
 
 spring:
   application:
@@ -14,6 +18,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
   security:
     oauth2:
       resourceserver:

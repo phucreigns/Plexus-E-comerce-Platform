@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package com.phuc.product.service.Impl;
 
 import com.phuc.product.dto.request.ProductCreateRequest;
@@ -6,24 +5,11 @@ import com.phuc.product.dto.request.ProductUpdateRequest;
 import com.phuc.product.entity.Product;
 import com.phuc.product.dto.response.ProductResponse;
 import com.phuc.product.entity.ProductVariant;
+import com.phuc.product.exception.ResourceNotFoundException;
 import com.phuc.product.mapper.ProductMapper;
 import com.phuc.product.mapper.ProductVariantMapper;
 import com.phuc.product.repository.ProductRepository;
 import com.phuc.product.service.ProductService;
-=======
-package com.product.service.Impl;
-
-import com.product.dto.request.ProductCreateRequest;
-import com.product.dto.request.ProductUpdateRequest;
-import com.product.entity.Product;
-import com.product.dto.response.ProductResponse;
-import com.product.entity.ProductVariant;
-import com.product.exception.ResourceNotFoundException;
-import com.product.mapper.ProductMapper;
-import com.product.mapper.ProductVariantMapper;
-import com.product.repository.ProductRepository;
-import com.product.service.ProductService;
->>>>>>> cfc5f57617e2a48d00f0d5a88dda7f2b77feda2b
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;

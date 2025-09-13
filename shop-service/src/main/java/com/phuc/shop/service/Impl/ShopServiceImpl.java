@@ -5,10 +5,7 @@ import com.phuc.shop.dto.request.ShopUpdateRequest;
 import com.phuc.shop.dto.response.SalesReportResponse;
 import com.phuc.shop.dto.response.ShopResponse;
 import com.phuc.shop.entity.Shop;
-<<<<<<< HEAD
-=======
 import com.phuc.shop.exception.ResourceNotFoundException;
->>>>>>> cfc5f57617e2a48d00f0d5a88dda7f2b77feda2b
 import com.phuc.shop.mapper.ShopMapper;
 import com.phuc.shop.repository.ShopRepository;
 import com.phuc.shop.service.ShopService;

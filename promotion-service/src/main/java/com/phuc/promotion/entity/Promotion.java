@@ -1,48 +1,42 @@
 package com.phuc.promotion.entity;
 
+import com.phuc.promotion.enums.PromotionType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "shops")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+//@Document(collection = "promotions")
 public class Promotion {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shop_id")
-    Long shopId;
+    String id;
 
-    @Column(name = "name", nullable = false, length = 255)
     String name;
+    String promoCode;
+    PromotionType type;
+    String description;
+    Conditions conditions;
+    Discount discount;
 
-    @Column(name = "logo_url")
-    String logoUrl;
+    Integer usageLimit;
+    Integer usageCount;
 
-    @Column(name = "email", nullable = false, length = 255, unique = true)
-    String email;
+    LocalDateTime startDate;
+    LocalDateTime endDate;
 
-    @Column(name = "created_at", nullable = false)
-    LocalDateTime createdAt;
+    @CreatedDate
+    LocalDateTime createAt;
 
-    @Column(name = "updated_at", nullable = false)
-    LocalDateTime updatedAt;
+    @LastModifiedDate
+    LocalDateTime updateAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

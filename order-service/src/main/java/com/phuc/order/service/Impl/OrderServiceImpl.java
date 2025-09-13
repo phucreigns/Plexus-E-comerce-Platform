@@ -2,6 +2,8 @@ package com.phuc.order.service.Impl;
 
 import com.phuc.order.dto.request.OrderCreateRequest;
 import com.phuc.order.dto.response.OrderResponse;
+import com.phuc.order.exception.AppException;
+import com.phuc.order.exception.ErrorCode;
 import com.phuc.order.repository.OrderRepository;
 import com.phuc.order.entity.Order;
 import com.phuc.order.entity.OrderItem;
@@ -14,6 +16,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.phuc.order.exception.ErrorCode.ORDER_NOT_FOUND;
+
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
@@ -21,49 +25,34 @@ public class OrderServiceImpl implements OrderService {
     OrderRepository orderRepository;
     OrderMapper orderMapper;
 
+
     @Override
-    @Transactional
-    public OrderResponse createOrder(OrderCreateRequest request) {
-        Order order = orderMapper.toOrder(request);
-        order.setCreatedAt(LocalDateTime.now());
-        order.setUpdatedAt(LocalDateTime.now());
-        order.setStatus("PENDING");
-
-        List<OrderItem> items = request.getItems()
-                .stream()
-                .map(orderItemMapper::toEntity)
-                .toList();
-
-        BigDecimal total = calculateTotalAmount(items);
-        order.setTotalAmount(total);
-
-        items.forEach(i -> i.setOrder(order)); // set order reference
-        order.setItems(items);
-
-        Order saved = orderRepository.save(order);
-        return orderMapper.toResponse(saved);
+    public Order createOrder(Order order) {
+        // Khi save order, JPA sẽ tự cascade xuống OrderItem
+        return orderRepository.save(order);
     }
 
     @Override
-    public OrderResponse getOrderById(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        return orderMapper.toResponse(order);
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ORDER_NOT_FOUND));
     }
 
     @Override
-    public void cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        order.setStatus("CANCELLED");
-        order.setUpdatedAt(LocalDateTime.now());
-        orderRepository.save(order);
+    public List<Order> getAllOrders() {
+        return orderRepository.findAll();
     }
 
-    private BigDecimal calculateTotalAmount(List<OrderItem> items) {
-        // TODO: Lấy giá sản phẩm từ DB hoặc API. Tạm hardcode:
-        return items.stream()
-                .map(item -> BigDecimal.valueOf(item.getQuantity()).multiply(BigDecimal.valueOf(100))) // Giả sử mỗi sản phẩm 100đ
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    @Override
+    public Order updateOrderStatus(Long orderId, String status) {
+        Order order = getOrderById(orderId);
+        order.setStatus(status);
+        return orderRepository.save(order);
+    }
+
+    @Override
+    public void deleteOrder(Long orderId) {
+        Order order = getOrderById(orderId);
+        orderRepository.delete(order);
     }
 }

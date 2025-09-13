@@ -1,5 +1,5 @@
 server:
-  port: ${AUTH_SERVICE_PORT:8094}
+  port: ${FILE_SERVICE_PORT:8094}
   servlet:
     context-path: /file
 
@@ -7,18 +7,16 @@ spring:
   application:
     name: file-service
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${AUTH_SERVICE_DB:FileService}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${FILE_SERVICE_DB:FileService}
     driver-class-name: org.postgresql.Driver
     username: ${POSTGRES_USERNAME}
     password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
+
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
-          jwk-set-uri: https://${AUTH0_DOMAIN}/.well-known/jwks.json
-
-

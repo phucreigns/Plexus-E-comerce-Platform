@@ -2,6 +2,7 @@ server:
   port: ${ORDER_SERVICE_PORT:8095}
   servlet:
     context-path: /order
+
 spring:
   application:
     name: order-service
@@ -18,4 +19,3 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
-

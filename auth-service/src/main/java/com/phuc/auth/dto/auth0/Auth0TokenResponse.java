@@ -14,7 +14,7 @@ public class Auth0TokenResponse {
     @JsonProperty("access_token")
     String accessToken;
 
-    @JsonProperty("expiresIn")
+    @JsonProperty("expires_in")
     String expiresIn;
 
     @JsonProperty("refresh_token")

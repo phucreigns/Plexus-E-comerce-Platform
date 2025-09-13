@@ -29,3 +29,6 @@ auth0:
   redirect-uri: ${AUTH0_REDIRECT_URI}
   issuer-uri: ${AUTH0_ISSUER_URI}
 
+file:
+  service:
+    url: ${FILE_SERVICE_URL}
