@@ -1,9 +1,9 @@
 package com.phuc.auth.service.Impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phuc.auth.dto.auth0.Auth0TokenResponse;
 import com.phuc.auth.dto.auth0.Auth0UserInfo;
 import com.phuc.auth.dto.request.RefreshTokenRequest;
-import com.phuc.auth.dto.request.UserCreateRequest;
 import com.phuc.auth.dto.request.UserUpdateRequest;
 import com.phuc.auth.dto.response.TokenResponse;
 import com.phuc.auth.dto.response.UserResponse;
@@ -21,9 +21,16 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -49,6 +56,14 @@ public class UserServiceImpl implements UserService {
     @Value("${auth0.audience}")
     @NonFinal
     String audience;
+
+    @Value("${auth0.domain}")
+    @NonFinal
+    String auth0Domain;
+
+    @Value("${app.redirect-url}")
+    @NonFinal
+    String redirectUrl;
 
     @Transactional
     @Override
@@ -117,6 +132,47 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
+    @Override
+    public void resetPassword() {
+        String email = getCurrentEmail();
+        if (email == null || email.isEmpty()) {
+            throw new AppException(ErrorCode.EMAIL_IS_EMPTY);
+        }
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String url = String.format("https://%s/dbconnections/change_password", auth0Domain);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("client_id", clientId);
+            body.put("email", email);
+            body.put("connection", "Username-Password-Authentication");
+
+            restTemplate.postForEntity(url,
+                    new HttpEntity<>(new ObjectMapper().writeValueAsString(body), headers), String.class);
+        } catch (Exception e) {
+            log.error("Reset password error: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.EXTERNAL_SERVICE_ERROR);
+        }
+    }
+
+    @Transactional
+    @Override
+    public ResponseEntity<Void> logout() {
+        HttpHeaders headers = new HttpHeaders();
+        String domain = auth0Domain.replaceAll("/+$", "");
+        String logoutUrl = String.format("https://%s/v2/logout?client_id=%s&returnTo=%s", domain,
+                clientId, redirectUrl);
+        headers.add("Location", logoutUrl);
+        headers.add("Set-Cookie", "access_token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax");
+        headers.add("Set-Cookie", "refresh_token=; Path=/; HttpOnly; Max-Age=0; SameSite=Lax");
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+
+
     private User createNewUSer(Auth0UserInfo userInfo) {
         String auth0Id = userInfo.getSub();
         String firstName = userInfo.getGivenName() != null ? userInfo.getGivenName() : "";
@@ -138,19 +194,20 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse createUser(UserCreateRequest request) {
-        User user = userMapper.toUser(request);
-        userRepository.save(user);
-        return userMapper.toUserResponse(user);
-    }
-
-    @Override
     public UserResponse getUserById(Long id) {
         User user = userRepository.findByUserId(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toUserResponse(user);
     }
 
     @Override
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserResponse(user);
+    }
+
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getAllUsers() {
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
     }
@@ -168,4 +225,10 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
+    private String getCurrentEmail() {
+        return ((Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getClaim("email");
+    }
+
+
 }
+

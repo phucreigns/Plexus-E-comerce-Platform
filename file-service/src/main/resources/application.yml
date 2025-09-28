@@ -6,14 +6,10 @@ server:
 spring:
   application:
     name: file-service
-  datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${FILE_SERVICE_DB:FileService}
-    driver-class-name: org.postgresql.Driver
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: update
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${FILE_SERVICE_DB:FileService}?authSource=admin
+
 
   security:
     oauth2:

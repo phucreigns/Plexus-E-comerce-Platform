@@ -12,11 +12,11 @@ import java.util.Map;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductVariantResponse {
-    Long variantId;
-    BigDecimal price;
-    String description;
-    String fileUrl;
-    Integer stock;
-    Integer soldQuantity;
+
+    String variantId;
+    double price;
+    int stock;
+    int soldQuantity;
     Map<String, Object> attributes;
+
 }

@@ -11,10 +11,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartItemCreateRequest {
     @NotNull(message = "PRODUCT_ID IS REQUIRED")
-    Long productId;
+    String productId;
 
     @NotNull(message = "VARIANT_ID IS REQUIRED")
-    Long variantId;
+    String variantId;
 
     @NotNull(message = "QUANTITY_ID IS REQUIRED")
     Integer quantity;

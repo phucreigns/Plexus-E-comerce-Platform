@@ -56,7 +56,8 @@ public enum ErrorCode {
     PACKAGE_TYPE_IS_REQUIRED(2028, "Package type is required. Please provide a valid package type.", HttpStatus.BAD_REQUEST),
     INVALID_OTP(2029, "The OTP provided is invalid. Please check and try again.", HttpStatus.BAD_REQUEST),
     PASSWORD_POLICY_VIOLATION(2030, "Password must meet the required policy: min length 8, at least one uppercase letter, one number, and one special character.", HttpStatus.BAD_REQUEST),
-    REFRESH_TOKEN_IS_INVALID(2031,"REFRESH_TOKEN_IS_INVALID", HttpStatus.BAD_REQUEST );
+    REFRESH_TOKEN_IS_INVALID(2031,"REFRESH_TOKEN_IS_INVALID", HttpStatus.BAD_REQUEST ),
+    EMAIL_IS_EMPTY(2032, "Email is empty." , HttpStatus.BAD_REQUEST ),;
 
     int code;
     String message;

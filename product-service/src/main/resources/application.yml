@@ -10,11 +10,17 @@ spring:
     mongodb:
       uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${PRODUCT_SERVICE_DB:ProductService}?authSource=admin
 
-  jpa:
-    hibernate:
-      ddl-auto: update
+
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
+
+shop:
+  service:
+    url: ${SHOP_SERVICE_URL}
+
+file:
+  service:
+    url: ${FILE_SERVICE_URL}

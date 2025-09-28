@@ -1,8 +1,8 @@
 package com.phuc.product.mapper;
 
-import com.phuc.product.dto.request.ProductCreateRequest;
+import com.phuc.product.dto.request.ProductCreationRequest;
 import com.phuc.product.dto.request.ProductUpdateRequest;
-import com.phuc.product.dto.request.ProductVariantCreateRequest;
+import com.phuc.product.dto.request.ProductVariantRequest;
 import com.phuc.product.dto.response.ProductResponse;
 import com.phuc.product.entity.Product;
 import com.phuc.product.entity.ProductVariant;
@@ -15,7 +15,7 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    Product toProduct(ProductCreateRequest request);
+    Product toProduct(ProductCreationRequest request);
 
     ProductResponse toProductResponse(Product product);
 
@@ -23,6 +23,7 @@ public interface ProductMapper {
 
     List<ProductResponse> toProductResponses(List<Product> products);
 
-    List<ProductVariant> toVariants(List<ProductVariantCreateRequest> variantRequests);
+    List<ProductVariant> toVariants(List<ProductVariantRequest> variantRequests);
 
+    void updateProductFromRequest(@MappingTarget ProductUpdateRequest request, Product product);
 }

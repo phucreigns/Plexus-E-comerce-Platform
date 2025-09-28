@@ -33,14 +33,27 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/create")
-    public UserResponse createUser(UserCreateRequest request) {
-        return userService.createUser(request);
+    @PutMapping("/reset-password")
+    public ApiResponse<Void> resetPassword() {
+        userService.resetPassword();
+        return ApiResponse.<Void>builder()
+                .message("Send reset password email successfully")
+                .build();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
+        return userService.logout();
     }
 
     @GetMapping("/{id}")
     public UserResponse getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+
+    @GetMapping("/{email}")
+    public UserResponse getUserByEmail(@PathVariable String email) {
+        return userService.getUserByEmail(email);
     }
 
     @GetMapping("/all")

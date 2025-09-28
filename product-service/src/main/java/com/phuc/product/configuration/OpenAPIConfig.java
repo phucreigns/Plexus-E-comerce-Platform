@@ -3,6 +3,7 @@ package com.phuc.product.configuration;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import org.springframework.context.annotation.Bean;
@@ -18,6 +19,7 @@ public class OpenAPIConfig {
                         .description("This is the REST API for Order Service")
                         .version("v0.0.1")
                         .license(new License().name("Apache 2.0")))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes("bearerAuth", new SecurityScheme()
                                 .type(Type.HTTP)

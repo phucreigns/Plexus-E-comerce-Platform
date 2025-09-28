@@ -2,31 +2,27 @@ package com.phuc.product.entity;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-
-@Data
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductVariant {
 
-    @Id
-    Long variantId;
+    @Builder.Default
+    String variantId = UUID.randomUUID().toString();
 
-    BigDecimal price;
+    double price;
+
+    int stock;
 
     String description;
 
-    String fileUrl;
-
-    Integer stock;
-
-    Integer soldQuantity;
+    int soldQuantity;
 
     Map<String, Object> attributes;
 

@@ -1,10 +1,10 @@
 package com.phuc.product.controller;
 
-import com.phuc.product.dto.response.CategoryResponse;
-import com.phuc.product.service.CategoryService;
 import com.phuc.product.dto.ApiResponse;
 import com.phuc.product.dto.request.CategoryCreationRequest;
 import com.phuc.product.dto.request.CategoryUpdateRequest;
+import com.phuc.product.dto.response.CategoryResponse;
+import com.phuc.product.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

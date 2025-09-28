@@ -36,6 +36,7 @@ public class AuthServiceApplication {
 		System.setProperty("AUTH0_CLIENT_SECRET", dotenv.get("AUTH0_CLIENT_SECRET", ""));
 		System.setProperty("AUTH0_REDIRECT_URI", dotenv.get("AUTH0_REDIRECT_URI", ""));
 		System.setProperty("AUTH0_AUDIENCE", dotenv.get("AUTH0_AUDIENCE", ""));
+        System.setProperty("REDIRECT_URL", dotenv.get("REDIRECT_URL", ""));
 
 		String auth0Domain = dotenv.get("AUTH0_DOMAIN", "");
 		if (auth0Domain.startsWith("https://")) {

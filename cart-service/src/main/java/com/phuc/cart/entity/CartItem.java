@@ -11,7 +11,7 @@ import lombok.experimental.FieldDefaults;
 @Embeddable
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartItem {
-    Long productId;
-    Long variantId;
+    String productId;
+    String variantId;
     Integer quantity;
 }

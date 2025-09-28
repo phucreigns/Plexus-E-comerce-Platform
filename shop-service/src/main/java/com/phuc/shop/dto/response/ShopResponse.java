@@ -1,19 +1,18 @@
 package com.phuc.shop.dto.response;
 
 import lombok.*;
-import java.time.LocalDateTime;
+import lombok.experimental.FieldDefaults;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShopResponse {
 
-    private Long shopId;
-    private String name;
-    private String logoUrl;
-    private String email;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-}
+    String id;
+    String name;
+    String email;
+    String ownerUsername;
 
+}

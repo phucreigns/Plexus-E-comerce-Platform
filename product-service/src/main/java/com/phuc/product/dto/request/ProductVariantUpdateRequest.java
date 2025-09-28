@@ -1,9 +1,10 @@
 package com.phuc.product.dto.request;
 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
 import java.util.Map;
 
 @Data
@@ -13,11 +14,16 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductVariantUpdateRequest {
 
-    Long variantId; // ID của biến thể cần cập nhật
+    @NotNull(message = "PRICE_IS_REQUIRED")
+    @Positive(message = "PRICE_MUST_BE_POSITIVE")
+    Double price;
 
-    BigDecimal price;
-    String description;
-    String fileUrl;
+    @NotNull(message = "STOCK_IS_REQUIRED")
+    @Positive(message = "STOCK_MUST_BE_POSITIVE")
     Integer stock;
+
+    @NotNull(message = "ATTRIBUTES_ARE_REQUIRED")
+    @Size(min = 1, message = "AT_LEAST_ONE_ATTRIBUTE_IS_REQUIRED")
     Map<String, Object> attributes;
+
 }

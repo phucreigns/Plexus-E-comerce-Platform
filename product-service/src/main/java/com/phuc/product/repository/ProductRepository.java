@@ -1,19 +1,23 @@
 package com.phuc.product.repository;
 
 import com.phuc.product.entity.Product;
+import com.phuc.product.enums.ProductSort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
-public interface ProductRepository extends MongoRepository<Product, Long> {
-    // Tìm theo tên sản phẩm (nếu cần)
-    List<Product> findByNameContainingIgnoreCase(String name);
+public interface ProductRepository extends MongoRepository<Product, String> {
 
     // Lọc theo shopId
-    List<Product> findByShopId(Long shopId);
+    List<Product> findByShopId(String shopId);
 
     // Lọc theo categoryId
-    List<Product> findByCategoryId(Long categoryId);
+    List<Product> findByCategoryId(String categoryId);
 
-    // Tùy chọn thêm: tìm theo shopId và categoryId
-    List<Product> findByShopIdAndCategoryId(Long shopId, Long categoryId);
+//    Page<Product> findByShopId(String shopId, Pageable pageable);
+
+//    Page<Product> search(String keyword, String shopId, String categoryId, Double minPrice, Double maxPrice, Pageable pageable);
+
+//    Page<Product> findProducts(String shopId, String categoryId, Pageable pageable);
 }

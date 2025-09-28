@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class CartItemResponse {
-    private Long productId;
-    private Long variantId;
+    private String productId;
+    private String variantId;
     private Integer quantity;
 }

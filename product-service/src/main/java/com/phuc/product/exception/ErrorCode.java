@@ -22,7 +22,8 @@ public enum ErrorCode {
     FOREIGN_KEY_VIOLATION(1007, "Foreign key violation. Please ensure all related data exists before proceeding.", HttpStatus.BAD_REQUEST),
     FILE_SIZE_EXCEEDED(1008, "The file size exceeds the allowed limit. Please upload a smaller file.", HttpStatus.BAD_REQUEST),
     MISSING_REQUIRED_PARAMETER(1009, "A required parameter is missing. Please ensure all required fields are provided.", HttpStatus.BAD_REQUEST),
-    SERVICE_UNAVAILABLE(1010, "The service is currently unavailable. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE),
+    INVALID_REQUEST_FORMAT(1011, "Invalid request format. Please check your JSON syntax.", HttpStatus.BAD_REQUEST),
+    SERVICE_UNAVAILABLE(1012, "The service is currently unavailable. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE),
 
     PRODUCT_NOT_FOUND(2000, "The specified product could not be found.", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_FOUND(2001, "The specified category could not be found.", HttpStatus.NOT_FOUND),
@@ -44,6 +45,7 @@ public enum ErrorCode {
     AT_LEAST_ONE_VARIANT_IS_REQUIRED(2017, "Please provide at least one valid variant.", HttpStatus.BAD_REQUEST),
     ATTRIBUTES_ARE_REQUIRED(2018, "Product attributes are required. Please include them.", HttpStatus.BAD_REQUEST),
     AT_LEAST_ONE_ATTRIBUTE_IS_REQUIRED(2019, "At least one attribute is required for the product variant.", HttpStatus.BAD_REQUEST),
+    SHOP_ID_IS_REQUIRED(2020, "Shop ID is required. Please provide a valid shop ID.", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

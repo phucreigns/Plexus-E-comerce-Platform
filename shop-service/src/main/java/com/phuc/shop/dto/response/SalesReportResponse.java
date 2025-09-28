@@ -1,34 +1,26 @@
 package com.phuc.shop.dto.response;
 
 import lombok.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import lombok.experimental.FieldDefaults;
+
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SalesReportResponse {
 
-    private String shopId;
-    private String shopName;
+    double totalRevenue;
+    int totalItemsSold;
+    List<Map.Entry<String, Integer>> sortedProductSales;
+    String topSellingProduct;
+    double highestRevenueProductRevenue;
+    String highestRevenueProduct;
+    String startDate;
+    String endDate;
 
-    private LocalDate startDate;
-    private LocalDate endDate;
-
-    private Integer totalOrders;
-    private Integer totalProductsSold;
-    private BigDecimal totalRevenue;
-    private BigDecimal averageOrderValue;
-
-    public SalesReportResponse(String s) {
-    }
-
-    // Optional: thống kê theo ngày
-    // private List<DailySalesSummary> dailySummaries;
-
-    // List<ProductSalesSummary> productSalesSummaryList;
 }
 

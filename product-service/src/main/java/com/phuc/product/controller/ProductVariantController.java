@@ -1,55 +1,59 @@
-//package com.product.controller;
-//import com.product.dto.request.ProductCreateRequest;
-//import com.product.dto.request.ProductUpdateRequest;
-//import com.product.dto.response.ProductResponse;
-//import com.product.service.ProductService;
-//import jakarta.validation.Valid;
-//import lombok.AccessLevel;
-//import lombok.AllArgsConstructor;
-//import lombok.experimental.FieldDefaults;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.List;
-//
-//@RestController
-//@AllArgsConstructor
-//@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-//public class ProductVariantController {
-//    ProductVariantService variantService;
-//
-//    // Tạo variant mới
-//    @PostMapping
-//    public ResponseEntity<ProductVariantResponse> createVariant(@RequestBody ProductVariantCreateRequest request) {
-//        ProductVariantResponse response = variantService.createVariant(request);
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    // Lấy variant theo ID
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ProductVariantResponse> getVariantById(@PathVariable Long id) {
-//        ProductVariantResponse response = variantService.getVariantById(id);
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    // Lấy tất cả variant theo productId
-//    @GetMapping("/product/{productId}")
-//    public ResponseEntity<List<ProductVariantResponse>> getVariantsByProductId(@PathVariable Long productId) {
-//        List<ProductVariantResponse> responses = variantService.getVariantsByProductId(productId);
-//        return ResponseEntity.ok(responses);
-//    }
-//
-//    // Cập nhật variant
-//    @PutMapping("/{id}")
-//    public ResponseEntity<ProductVariantResponse> updateVariant(@PathVariable Long id,
-//                                                                @RequestBody ProductVariantUpdateRequest request) {
-//        ProductVariantResponse response = variantService.updateVariant(id, request);
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    // Xoá variant
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> deleteVariant(@PathVariable Long id) {
-//        variantService.deleteVariant(id);
-//        return ResponseEntity.noContent().build();
-//    }
-//}
+package com.phuc.product.controller;
+
+import com.phuc.product.dto.ApiResponse;
+import com.phuc.product.dto.request.ProductVariantRequest;
+import com.phuc.product.dto.request.ProductVariantUpdateRequest;
+import com.phuc.product.service.ProductVariantService;
+import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/variants")
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class ProductVariantController {
+
+    ProductVariantService productVariantService;
+
+    @PostMapping("/{productId}")
+    public ApiResponse<Void> addProductVariant(@PathVariable String productId,
+                                               @RequestBody @Valid ProductVariantRequest request) {
+        productVariantService.addProductVariant(productId, request);
+        return ApiResponse.<Void>builder()
+                .message("Product variant added successfully")
+                .build();
+    }
+
+    @PutMapping("/{productId}/{variantId}")
+    public ApiResponse<Void> updateProductVariant(@PathVariable String productId,
+                                                  @PathVariable String variantId,
+                                                  @RequestBody @Valid ProductVariantUpdateRequest request) {
+        productVariantService.updateProductVariant(productId, variantId, request);
+        return ApiResponse.<Void>builder()
+                .message("Product variant updated successfully")
+                .build();
+    }
+
+    @PutMapping("/{productId}/update-stock-sold")
+    public ApiResponse<Void> updateStockAndSoldQuantity(@PathVariable String productId,
+                                                        @RequestParam String variantId,
+                                                        @RequestParam int quantity) {
+        productVariantService.updateStockAndSoldQuantity(productId, variantId, quantity);
+        return ApiResponse.<Void>builder()
+                .message("Variant stock and sold quantity updated successfully")
+                .build();
+    }
+
+    @DeleteMapping("/{productId}/{variantId}")
+    public ApiResponse<String> deleteProductVariant(@PathVariable String productId,
+                                                    @PathVariable String variantId) {
+        productVariantService.deleteProductVariant(productId, variantId);
+        return ApiResponse.<String>builder()
+                .result("Product variant has been deleted")
+                .build();
+    }
+
+}

@@ -1,21 +1,17 @@
 package com.phuc.shop.dto.request;
 
-import jakarta.validation.constraints.Email;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ShopUpdateRequest {
 
-    private String name;
+    @NotNull(message = "NAME_IS_REQUIRED")
+    String name;
 
-    private String logoUrl;
-
-    @Email(message = "Invalid email format")
-    private String email;
 }

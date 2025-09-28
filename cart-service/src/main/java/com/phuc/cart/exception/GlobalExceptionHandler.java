@@ -13,6 +13,7 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -55,6 +56,12 @@ public class GlobalExceptionHandler {
     ResponseEntity<ApiResponse<Object>> handleMissingServletRequestParameterException(MissingServletRequestParameterException exception) {
         log.error("Missing required request parameter: {}", exception.getMessage());
         return buildResponse(ErrorCode.MISSING_REQUIRED_PARAMETER, ErrorCode.MISSING_REQUIRED_PARAMETER.getMessage());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ApiResponse<Object>> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+        log.error("JSON parsing error: {}", exception.getMessage());
+        return buildResponse(ErrorCode.INVALID_REQUEST_FORMAT, "Invalid JSON format. Please check your request body.");
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

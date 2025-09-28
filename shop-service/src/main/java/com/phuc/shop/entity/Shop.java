@@ -1,48 +1,30 @@
 package com.phuc.shop.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import lombok.*;
 
-import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "shops")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Document(collection = "shop")
 public class Shop {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "shop_id")
-    Long shopId;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Id
+    String id;
+
+    @Indexed
     String name;
 
-    @Column(name = "logo_url")
-    String logoUrl;
+    @Indexed
+    String ownerEmail;
 
-    @Column(name = "email", nullable = false, length = 255, unique = true)
     String email;
 
-    @Column(name = "created_at", nullable = false)
-    LocalDateTime createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

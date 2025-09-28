@@ -15,8 +15,16 @@ public interface UserService {
 
     TokenResponse refreshToken(RefreshTokenRequest request);
 
-    UserResponse createUser(UserCreateRequest request);
+    @Transactional
+    void resetPassword();
+
+    @Transactional
+    ResponseEntity<Void> logout();
+
     UserResponse getUserById(Long id);
+
+    UserResponse getUserByEmail(String email);
+
     List<UserResponse> getAllUsers();
     UserResponse updateUser(UserUpdateRequest request, Long userId);
     void deleteUser(Long id);
