@@ -50,7 +50,8 @@
             "mainClass": "com.phuc.cart.CartServiceApplication",
             "projectName": "cart-service",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=51568 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=cart-service"
         },
         {
             "type": "java",
@@ -60,7 +61,8 @@
             "mainClass": "com.phuc.product.ProductServiceApplication",
             "projectName": "product-service",
             "args": "",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=51585 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=product-service"
         },
         {
             "type": "java",
@@ -69,6 +71,17 @@
             "cwd": "${workspaceFolder}",
             "mainClass": "com.phuc.shop.ShopServiceApplication",
             "projectName": "shop-service",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=51591 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=shop-service"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-OrderServiceApplication<order-service>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.phuc.order.OrderServiceApplication",
+            "projectName": "order-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
         }

@@ -1,6 +1,5 @@
 package com.phuc.order.configuration;
 
-import com.phuc.order.configuration.CustomAuthoritiesConverter;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;

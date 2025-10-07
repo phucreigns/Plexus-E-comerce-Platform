@@ -1,5 +1,5 @@
 server:
-  port: ${ORDER_SERVICE_PORT:8095}
+  port: ${ORDER_SERVICE_PORT:8096}
   servlet:
     context-path: /order
 
@@ -14,8 +14,13 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
   security:
     oauth2:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
+
+product:
+  service:
+    url: ${PRODUCT_SERVICE_URL}

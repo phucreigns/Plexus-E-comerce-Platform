@@ -46,6 +46,7 @@ public enum ErrorCode {
     ATTRIBUTES_ARE_REQUIRED(2018, "Product attributes are required. Please include them.", HttpStatus.BAD_REQUEST),
     AT_LEAST_ONE_ATTRIBUTE_IS_REQUIRED(2019, "At least one attribute is required for the product variant.", HttpStatus.BAD_REQUEST),
     SHOP_ID_IS_REQUIRED(2020, "Shop ID is required. Please provide a valid shop ID.", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_STOCK(2021, "Insufficient stock available for the requested quantity.", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

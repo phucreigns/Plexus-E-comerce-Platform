@@ -8,8 +8,7 @@ import lombok.*;
 @Builder
 public class OrderItemResponse {
 
-    Long orderItemId;
-    Long productId;
-    Long variantId;
+    String productId;
+    String variantId;
     int quantity;
 }

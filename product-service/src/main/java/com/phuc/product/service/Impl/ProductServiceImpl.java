@@ -293,4 +293,51 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    // Methods for order-service compatibility
+    @Override
+    public void reduceStock(String productId, String variantId, Integer quantity) {
+        log.info("Reducing stock for product {} variant {} by quantity {}", productId, variantId, quantity);
+        Product product = findProductById(productId);
+        ProductVariant variant = findVariantById(product, variantId);
+        
+        if (variant.getStock() < quantity) {
+            log.error("Insufficient stock for product {} variant {}. Available: {}, Requested: {}", 
+                    productId, variantId, variant.getStock(), quantity);
+            throw new AppException(ErrorCode.INSUFFICIENT_STOCK);
+        }
+        
+        variant.setStock(variant.getStock() - quantity);
+        productRepository.save(product);
+        log.info("Successfully reduced stock for product {} variant {} by quantity {}", productId, variantId, quantity);
+    }
+
+    @Override
+    public void restoreStock(String productId, String variantId, Integer quantity) {
+        log.info("Restoring stock for product {} variant {} by quantity {}", productId, variantId, quantity);
+        Product product = findProductById(productId);
+        ProductVariant variant = findVariantById(product, variantId);
+        
+        variant.setStock(variant.getStock() + quantity);
+        productRepository.save(product);
+        log.info("Successfully restored stock for product {} variant {} by quantity {}", productId, variantId, quantity);
+    }
+
+    @Override
+    public void updateStockAndSoldQuantity(String productId, String variantId, Integer quantity) {
+        log.info("Updating stock and sold quantity for product {} variant {} by quantity {}", productId, variantId, quantity);
+        Product product = findProductById(productId);
+        ProductVariant variant = findVariantById(product, variantId);
+        
+        if (variant.getStock() < quantity) {
+            log.error("Insufficient stock for product {} variant {}. Available: {}, Requested: {}", 
+                    productId, variantId, variant.getStock(), quantity);
+            throw new AppException(ErrorCode.INSUFFICIENT_STOCK);
+        }
+        
+        variant.setStock(variant.getStock() - quantity);
+        variant.setSoldQuantity(variant.getSoldQuantity() + quantity);
+        productRepository.save(product);
+        log.info("Successfully updated stock and sold quantity for product {} variant {} by quantity {}", productId, variantId, quantity);
+    }
+
 }

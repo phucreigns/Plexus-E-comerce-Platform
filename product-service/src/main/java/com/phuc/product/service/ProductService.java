@@ -38,4 +38,11 @@ public interface ProductService {
 
     List<ProductResponse> getProductsByCategoryId(String categoryId);
 
+    // Methods for order-service compatibility
+    void reduceStock(String productId, String variantId, Integer quantity);
+    
+    void restoreStock(String productId, String variantId, Integer quantity);
+    
+    void updateStockAndSoldQuantity(String productId, String variantId, Integer quantity);
+
 }

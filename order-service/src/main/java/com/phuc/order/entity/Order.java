@@ -5,18 +5,24 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-
-import java.math.BigDecimal;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Entity
-@Table(name = "orders")
-@Data
+@Getter
+@Setter
+@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Entity
+@EntityListeners(AuditingEntityListener.class)
+@Table(name = "orders",
+        indexes = {
+                @Index(name = "idx_orders_email", columnList = "email"),
+                @Index(name = "idx_orders_status", columnList = "status")
+        })
 public class Order {
 
     @Id
@@ -27,16 +33,15 @@ public class Order {
     String email;
 
     @Column(nullable = false)
-    BigDecimal totalAmount;
+    Double total;
 
     @Column(nullable = false)
     String status;
 
-    @Column(name = "payment_method")
-    String paymentMethod;
-
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<OrderItem> items;
+    // Temporarily comment out items to fix Hibernate issue
+    // @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // @JoinColumn(name = "order_id")
+    // List<OrderItem> items;
 
     @CreatedDate
     LocalDateTime createdAt;

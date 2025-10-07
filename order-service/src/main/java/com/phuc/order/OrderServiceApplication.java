@@ -3,8 +3,12 @@ package com.phuc.order;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
+@EnableFeignClients
+@ComponentScan(basePackages = {"com.phuc.order", "com.phuc.order.mapper"})
 public class OrderServiceApplication {
 
 	public static void main(String[] args) {
@@ -20,6 +24,7 @@ public class OrderServiceApplication {
 		System.setProperty("POSTGRES_HOST", dotenv.get("POSTGRES_HOST", ""));
 		System.setProperty("POSTGRES_USERNAME", dotenv.get("POSTGRES_USERNAME", ""));
 		System.setProperty("POSTGRES_PASSWORD", dotenv.get("POSTGRES_PASSWORD", ""));
+		System.setProperty("PRODUCT_SERVICE_URL", dotenv.get("PRODUCT_SERVICE_URL", ""));
 
 		System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
 	}

@@ -8,7 +8,6 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 import static io.swagger.v3.oas.models.security.SecurityScheme.In.HEADER;
 
 @Configuration

@@ -24,3 +24,7 @@ shop:
 file:
   service:
     url: ${FILE_SERVICE_URL}
+
+order:
+  service:
+    url: ${ORDER_SERVICE_URL}

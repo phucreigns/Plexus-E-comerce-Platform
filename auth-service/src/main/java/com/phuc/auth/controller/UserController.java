@@ -2,7 +2,6 @@ package com.phuc.auth.controller;
 
 import com.phuc.auth.dto.ApiResponse;
 import com.phuc.auth.dto.request.RefreshTokenRequest;
-import com.phuc.auth.dto.request.UserCreateRequest;
 import com.phuc.auth.dto.request.UserUpdateRequest;
 import com.phuc.auth.dto.response.TokenResponse;
 import com.phuc.auth.dto.response.UserResponse;
@@ -46,12 +45,12 @@ public class UserController {
         return userService.logout();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/id/{id}")
     public UserResponse getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
     }
 
-    @GetMapping("/{email}")
+    @GetMapping("/email/{email}")
     public UserResponse getUserByEmail(@PathVariable String email) {
         return userService.getUserByEmail(email);
     }
@@ -62,7 +61,7 @@ public class UserController {
     }
 
     @PutMapping("/update/{userId}")
-    public UserResponse updateUser(UserUpdateRequest request, @PathVariable Long userId){
+    public UserResponse updateUser(@RequestBody @Valid UserUpdateRequest request, @PathVariable Long userId){
         return userService.updateUser(request, userId);
     }
 

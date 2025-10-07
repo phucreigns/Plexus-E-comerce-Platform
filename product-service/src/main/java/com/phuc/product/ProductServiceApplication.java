@@ -23,7 +23,8 @@ public class ProductServiceApplication {
 		System.setProperty("MONGO_PASSWORD", dotenv.get("MONGO_PASSWORD", ""));
         System.setProperty("SHOP_SERVICE_URL", dotenv.get("SHOP_SERVICE_URL", ""));
         System.setProperty("FILE_SERVICE_URL", dotenv.get("FILE_SERVICE_URL", ""));
-
+        System.setProperty("ORDER_SERVICE_URL", dotenv.get("ORDER_SERVICE_URL", ""));
+		
         System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
 
 	}

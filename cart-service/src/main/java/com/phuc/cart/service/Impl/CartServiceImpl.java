@@ -5,6 +5,7 @@ import com.phuc.cart.dto.response.CartItemResponse;
 import com.phuc.cart.dto.response.CartResponse;
 import com.phuc.cart.entity.Cart;
 import com.phuc.cart.entity.CartItem;
+import com.phuc.cart.httpclient.ProductClient;
 import com.phuc.cart.mapper.CartMapper;
 import com.phuc.cart.repository.CartRepository;
 import com.phuc.cart.service.CartService;
@@ -15,21 +16,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CartServiceImpl implements CartService {
     CartRepository cartRepository;
     CartMapper cartMapper;
+    ProductClient productClient;
 
     @Override
     public CartResponse createCart(CartCreateRequest request) {
         try {
             log.info("Creating cart for email: {}", request.getEmail());
             log.info("Cart items: {}", request.getItems());
+            
+            // Validate all productIds exist
+            validateProductIds(request.getItems());
             
             // Manual mapping instead of MapStruct
             Cart cart = Cart.builder()
@@ -42,7 +48,7 @@ public class CartServiceImpl implements CartService {
                             .variantId(itemReq.getVariantId())
                             .quantity(itemReq.getQuantity())
                             .build())
-                    .toList();
+                    .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
             cart.setItems(items);
 
             // Tính tổng tiền
@@ -104,6 +110,9 @@ public class CartServiceImpl implements CartService {
         Cart existingCart = cartRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cart not found with id: " + id));
 
+        // Validate all productIds exist
+        validateProductIds(request.getItems());
+
         // Cập nhật email và tổng tiền nếu cần
         existingCart.setEmail(request.getEmail());
         // Calculate total amount from items
@@ -125,7 +134,7 @@ public class CartServiceImpl implements CartService {
                         .variantId(itemReq.getVariantId())
                         .quantity(itemReq.getQuantity())
                         .build())
-                .toList();
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
         existingCart.setItems(newItems);
 
@@ -139,5 +148,24 @@ public class CartServiceImpl implements CartService {
     private BigDecimal getProductPrice(CartItem item) {
         // Ví dụ cố định
         return BigDecimal.valueOf(100000); // 100.000 đ / sản phẩm
+    }
+
+    /**
+     * Validate that all productIds exist in Product Service
+     */
+    private void validateProductIds(List<com.phuc.cart.dto.request.CartItemCreateRequest> items) {
+        for (com.phuc.cart.dto.request.CartItemCreateRequest item : items) {
+            try {
+                log.info("Validating productId: {}", item.getProductId());
+                var response = productClient.checkProductExists(item.getProductId());
+                if (response == null || !Boolean.TRUE.equals(response.getResult())) {
+                    throw new RuntimeException("Product with ID " + item.getProductId() + " does not exist");
+                }
+                log.info("ProductId {} validated successfully", item.getProductId());
+            } catch (Exception e) {
+                log.error("Error validating productId {}: {}", item.getProductId(), e.getMessage());
+                throw new RuntimeException("Failed to validate product with ID " + item.getProductId() + ": " + e.getMessage());
+            }
+        }
     }
 }

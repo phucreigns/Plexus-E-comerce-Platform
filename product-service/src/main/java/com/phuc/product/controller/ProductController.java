@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -148,6 +149,53 @@ public class ProductController {
     public ApiResponse<List<ProductResponse>> getProductsByCategoryId(@PathVariable String categoryId) {
         return ApiResponse.<List<ProductResponse>>builder()
                 .result(productService.getProductsByCategoryId(categoryId))
+                .build();
+    }
+
+    // Endpoints for order-service compatibility
+    @GetMapping("/{productId}/variant/{variantId}/stock")
+    public ApiResponse<Integer> getProductStockByVariant(@PathVariable String productId,
+                                                         @PathVariable String variantId) {
+        return ApiResponse.<Integer>builder()
+                .result(productService.getProductStockById(productId, variantId))
+                .build();
+    }
+
+    @GetMapping("/{productId}/variant/{variantId}/price")
+    public ApiResponse<Double> getProductPriceByVariant(@PathVariable String productId,
+                                                        @PathVariable String variantId) {
+        return ApiResponse.<Double>builder()
+                .result(productService.getProductPriceById(productId, variantId))
+                .build();
+    }
+
+    @PostMapping("/{productId}/variant/{variantId}/reduce-stock")
+    public ApiResponse<Void> reduceStock(@PathVariable String productId,
+                                         @PathVariable String variantId,
+                                         @RequestBody Map<String, Integer> request) {
+        productService.reduceStock(productId, variantId, request.get("quantity"));
+        return ApiResponse.<Void>builder()
+                .result(null)
+                .build();
+    }
+
+    @PostMapping("/{productId}/variant/{variantId}/restore-stock")
+    public ApiResponse<Void> restoreStock(@PathVariable String productId,
+                                          @PathVariable String variantId,
+                                          @RequestBody Map<String, Integer> request) {
+        productService.restoreStock(productId, variantId, request.get("quantity"));
+        return ApiResponse.<Void>builder()
+                .result(null)
+                .build();
+    }
+
+    @PutMapping("/{productId}/variant/{variantId}/stock-sold")
+    public ApiResponse<Void> updateStockAndSoldQuantity(@PathVariable String productId,
+                                                        @PathVariable String variantId,
+                                                        @RequestBody Integer quantity) {
+        productService.updateStockAndSoldQuantity(productId, variantId, quantity);
+        return ApiResponse.<Void>builder()
+                .result(null)
                 .build();
     }
 
