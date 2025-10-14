@@ -1,10 +1,10 @@
-package com.example.Ecom;
+package com.phuc.review;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class EcomApplicationTests {
+@SpringBootTest(classes = ReviewServiceApplication.class)
+class ReviewServiceApplicationTests {
 
 	@Test
 	void contextLoads() {

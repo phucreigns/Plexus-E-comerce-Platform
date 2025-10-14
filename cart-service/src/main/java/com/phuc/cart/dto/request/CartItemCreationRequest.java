@@ -9,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CartItemCreateRequest {
+public class CartItemCreationRequest {
     @NotNull(message = "PRODUCT_ID IS REQUIRED")
     String productId;
 

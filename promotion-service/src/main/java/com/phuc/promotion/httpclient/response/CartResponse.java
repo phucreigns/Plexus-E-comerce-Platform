@@ -15,6 +15,6 @@ public class CartResponse {
     String username;
     String email;
     List<CartItemResponse> items;
-    double total;
+    double totalAmount;  // Changed from 'total' to match cart-service response
 
 }

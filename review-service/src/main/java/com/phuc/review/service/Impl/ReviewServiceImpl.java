@@ -1,8 +1,5 @@
 package com.phuc.review.service.Impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.phuc.review.dto.ApiResponse;
 import com.phuc.review.dto.request.ReviewCreationRequest;
 import com.phuc.review.dto.request.ReviewUpdateRequest;
 import com.phuc.review.dto.response.ReviewResponse;
@@ -12,15 +9,11 @@ import com.phuc.review.exception.ErrorCode;
 import com.phuc.review.mapper.ReviewMapper;
 import com.phuc.review.repository.ReviewRepository;
 import com.phuc.review.service.ReviewService;
-import feign.FeignException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
@@ -40,8 +33,59 @@ public class ReviewServiceImpl implements ReviewService {
 
 
     @Override
+    @Transactional
     public ReviewResponse createReview(ReviewCreationRequest request, List<MultipartFile> images) {
-        return null;
+        try {
+            log.info("Creating review for productId: {}, variantId: {}", request.getProductId(), request.getVariantId());
+            
+            // Get current user email from JWT token
+            String email = getCurrentUserEmail();
+            if (email == null) {
+                throw new AppException(ErrorCode.UNAUTHORIZED);
+            }
+            
+            // Create review entity
+            Review review = Review.builder()
+                    .email(email)
+                    .productId(request.getProductId())
+                    .variantId(request.getVariantId())
+                    .rating(request.getRating())
+                    .comment(request.getComment())
+                    .imageUrls(List.of()) // Empty for now, can be implemented later
+                    .build();
+            
+            // Save review
+            Review savedReview = reviewRepository.save(review);
+            log.info("Review created successfully with ID: {}", savedReview.getReviewId());
+            
+            // Convert to response
+            return reviewMapper.toReviewResponse(savedReview);
+            
+        } catch (Exception e) {
+            log.error("Error creating review: {}", e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+    }
+    
+    private String getCurrentUserEmail() {
+        try {
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null) {
+                return null;
+            }
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof Jwt jwt) {
+                String email = jwt.getClaim("email");
+                if (email == null || email.isBlank()) {
+                    email = jwt.getClaim("preferred_username");
+                }
+                return email;
+            }
+            return null;
+        } catch (Exception e) {
+            log.error("Error getting current user email: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Override

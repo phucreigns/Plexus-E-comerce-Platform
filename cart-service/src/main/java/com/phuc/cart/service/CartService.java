@@ -1,6 +1,6 @@
 package com.phuc.cart.service;
 
-import com.phuc.cart.dto.request.CartCreateRequest;
+import com.phuc.cart.dto.request.CartCreationRequest;
 import com.phuc.cart.dto.response.CartResponse;
 import jakarta.validation.Valid;
 
@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CartService {
 
-    CartResponse createCart(CartCreateRequest request);
+    CartResponse createCart(CartCreationRequest request);
 
     List<CartResponse> getAllCarts();
 
@@ -16,5 +16,9 @@ public interface CartService {
 
     void deleteCart(Long id);
 
-    CartResponse updateCart(Long id, @Valid CartCreateRequest request);
+    CartResponse updateCart(Long id, @Valid CartCreationRequest request);
+    
+    void updateCartTotal(String email, double total);
+
+    CartResponse getCartByEmail(String email);
 }

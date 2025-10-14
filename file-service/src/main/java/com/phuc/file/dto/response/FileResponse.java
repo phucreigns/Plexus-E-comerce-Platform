@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FileResponse {
-    Long fileId;
+    String fileId;
     String name;
     String type;
     String url;
-    Long size;
+    String size;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

@@ -12,12 +12,12 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ReviewResponse {
 
-    String id;
-    String username;
+    String reviewId;
+    String email;
     String productId;
     String variantId;
     int rating;
-    String content;
+    String comment;
     List<String> imageUrls;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

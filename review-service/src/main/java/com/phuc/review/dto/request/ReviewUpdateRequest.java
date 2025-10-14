@@ -20,6 +20,6 @@ public class ReviewUpdateRequest {
     int rating;
 
     @Size(max = 500, message = "CONTENT_TOO_LONG")
-    String content;
+    String comment;
 
 }

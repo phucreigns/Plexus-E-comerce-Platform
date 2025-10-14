@@ -2,7 +2,6 @@ package com.phuc.file.service.Impl;
 
 import com.phuc.file.dto.response.FileResponse;
 import com.phuc.file.entity.File;
-import com.phuc.file.exception.ResourceNotFoundException;
 import com.phuc.file.mapper.FileMapper;
 import com.phuc.file.repository.FileRepository;
 import com.phuc.file.service.FileService;
@@ -10,81 +9,124 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.nio.file.*;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
+import com.phuc.file.exception.AppException;
+import com.phuc.file.exception.ErrorCode;
+
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class FileServiceImpl implements FileService {
 
-    FileRepository fileRepository;
-    FileMapper fileMapper;
+      S3Client s3Client;
+      FileMapper fileMapper;
+      FileRepository fileRepository;
 
-    private final String UPLOAD_DIR = "uploads"; // Bạn có thể đặt trong application.properties
+      @Value("${cloud.aws.s3.bucket}")
+      @NonFinal
+      String bucketName;
 
-    @Override
-    public FileResponse uploadFile(MultipartFile multipartFile) throws IOException {
-        // Tạo thư mục nếu chưa có
-        Path uploadPath = Paths.get(UPLOAD_DIR);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
+      @Value("${cloud.aws.region.static}")
+      @NonFinal
+      String region;
 
-        String originalFilename = multipartFile.getOriginalFilename();
-        String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String storedFileName = UUID.randomUUID() + fileExtension;
+      @Override
+      public FileResponse uploadFile(MultipartFile file) throws IOException {
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-        Path filePath = uploadPath.resolve(storedFileName);
-        Files.copy(multipartFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            uploadToS3(file, fileName);
 
-        // Lưu thông tin vào DB
-        File file = File.builder()
-                .name(originalFilename)
-                .type(multipartFile.getContentType())
-                .url(filePath.toString()) // hoặc sinh URL phục vụ nếu dùng web server
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+            String fileUrl = generateFileUrl(fileName);
+            File fileEntity = saveFileMetadata(file, fileName, fileUrl);
 
-        fileRepository.save(file);
 
-        return fileMapper.toFileResponse(file);
-    }
+            fileEntity.setUrl(fileUrl);
+            fileRepository.save(fileEntity);
 
-    @Override
-    public List<FileResponse> uploadMultipleFiles(List<MultipartFile> files) throws IOException {
-        return files.stream()
-                .map(file -> {
-                    try {
-                        return uploadFile(file);
-                    } catch (IOException e) {
-                        throw new RuntimeException("Failed to upload: " + file.getOriginalFilename(), e);
-                    }
-                }).toList();
-    }
+            return fileMapper.toFileResponse(fileEntity);
+      }
 
-    @Override
-    public void deleteFile(String fileName) {
-        // Xóa file vật lý
-        Path path = Paths.get(UPLOAD_DIR).resolve(fileName);
-        try {
-            Files.deleteIfExists(path);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to delete file " + fileName, e);
-        }
+      @Override
+      public List<FileResponse> uploadMultipleFiles(List<MultipartFile> files) {
+            List<FileResponse> responses = new ArrayList<>();
 
-        // Xóa khỏi DB
-        File file = fileRepository.findByName(fileName)
-                .orElseThrow(() -> new ResourceNotFoundException("File not found: " + fileName));
-        fileRepository.delete(file);
-    }
+            files.parallelStream().forEach(file -> {    
+                  try {
+                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-    @Override
-    public FileResponse getFile(String fileName) {
-        File file = fileRepository.findByName(fileName)
-                .orElseThrow(() -> new ResourceNotFoundException("File not found: " + fileName));
-        return fileMapper.toFileResponse(file);
-    }
+                        uploadToS3(file, fileName);
+
+                        String fileUrl = generateFileUrl(fileName);
+                        File fileEntity = saveFileMetadata(file, fileName, fileUrl);
+
+                        fileEntity.setUrl(fileUrl);
+                        fileRepository.save(fileEntity);
+
+                        synchronized (responses) {
+                              responses.add(fileMapper.toFileResponse(fileEntity));
+                        }
+                  } catch (IOException e) {
+                        log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
+                  }
+            });
+
+            return responses;
+      }
+
+      @Override
+      @PreAuthorize("hasRole('ADMIN')")
+      public void deleteFile(String fileName) {
+            s3Client.deleteObject(deleteRequest -> deleteRequest.bucket(bucketName).key(fileName));
+            fileRepository.deleteByName(fileName);
+      }
+
+      @Override
+      @PreAuthorize("hasRole('ADMIN')")
+      public FileResponse getFile(String fileName) {
+            File fileEntity = fileRepository.findByName(fileName)
+                    .orElseThrow(() -> new AppException(ErrorCode.FILE_NOT_FOUND));
+            return fileMapper.toFileResponse(fileEntity);
+      }
+
+      private String generateFileUrl(String fileName) {
+            return "https://" + bucketName + ".s3." + region + ".amazonaws.com/" + fileName;
+      }
+
+      private void uploadToS3(MultipartFile file, String fileName) throws IOException {
+            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .contentType(file.getContentType())
+                    .build();
+
+            s3Client.putObject(putObjectRequest, RequestBody.fromBytes(file.getBytes()));
+      }
+
+      private File saveFileMetadata(MultipartFile file, String fileName, String fileUrl) {
+            File fileEntity = File.builder()
+                    .fileId(UUID.randomUUID().toString())
+                    .name(fileName)
+                    .url(fileUrl)
+                    .size(String.valueOf(file.getSize()))
+                    .type(file.getContentType())
+                    .build();
+
+            fileRepository.save(fileEntity);
+            return fileEntity;
+      }
+
 }

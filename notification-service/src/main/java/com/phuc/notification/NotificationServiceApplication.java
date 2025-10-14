@@ -21,5 +21,11 @@ public class NotificationServiceApplication {
 		System.setProperty("POSTGRES_USERNAME", dotenv.get("POSTGRES_USERNAME", ""));
 		System.setProperty("POSTGRES_PASSWORD", dotenv.get("POSTGRES_PASSWORD", ""));
 		System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
+		
+		// Email configuration
+		System.setProperty("MAIL_HOST", dotenv.get("MAIL_HOST", "smtp.gmail.com"));
+		System.setProperty("MAIL_PORT", dotenv.get("MAIL_PORT", "587"));
+		System.setProperty("MAIL_USERNAME", dotenv.get("MAIL_USERNAME", ""));
+		System.setProperty("MAIL_PASSWORD", dotenv.get("MAIL_PASSWORD", ""));
 	}
 }

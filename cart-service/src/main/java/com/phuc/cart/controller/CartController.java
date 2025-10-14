@@ -1,6 +1,6 @@
 package com.phuc.cart.controller;
 
-import com.phuc.cart.dto.request.CartCreateRequest;
+import com.phuc.cart.dto.request.CartCreationRequest;
 import com.phuc.cart.dto.response.CartResponse;
 import com.phuc.cart.service.CartService;
 import jakarta.validation.Valid;
@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 
 @RestController
@@ -19,7 +20,7 @@ public class CartController {
     CartService cartService;
 
     @PostMapping("/create")
-    public ResponseEntity<CartResponse> createCart(@Valid @RequestBody CartCreateRequest request) {
+    public ResponseEntity<CartResponse> createCart(@Valid @RequestBody CartCreationRequest request) {
         return ResponseEntity.ok(cartService.createCart(request));
     }
 
@@ -36,7 +37,30 @@ public class CartController {
 
     @PutMapping("/{id}")
     public ResponseEntity<CartResponse> updateCart(@PathVariable Long id,
-                                                   @Valid @RequestBody CartCreateRequest request) {
+                                                   @Valid @RequestBody CartCreationRequest request) {
         return ResponseEntity.ok(cartService.updateCart(id, request));
+    }
+
+    // Endpoints for Promotion Service integration
+    @GetMapping("/")
+    public ResponseEntity<CartResponse> getMyCart() {
+        // For now, return the first cart (in real app, get by authenticated user)
+        List<CartResponse> carts = cartService.getAllCarts();
+        if (carts.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(carts.get(0));
+    }
+
+    @PutMapping("/update-total")
+    public ResponseEntity<Void> updateCartTotal(@RequestParam("email") String email, 
+                                                @RequestBody double total) {
+        cartService.updateCartTotal(email, total);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/by-email")
+    public ResponseEntity<CartResponse> getCartByEmail(@RequestParam("email") String email) {
+        return ResponseEntity.ok(cartService.getCartByEmail(email));
     }
 }

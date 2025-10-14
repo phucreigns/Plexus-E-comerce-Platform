@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class File {
 
     @Id
-    Long fileId;
+    String fileId;
 
     String name;
 

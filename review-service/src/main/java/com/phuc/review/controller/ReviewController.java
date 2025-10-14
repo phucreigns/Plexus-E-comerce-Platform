@@ -23,10 +23,9 @@ public class ReviewController {
     ReviewService reviewService;
 
     @PostMapping("/create")
-    public ApiResponse<ReviewResponse> createReview(@RequestPart("request") @Valid ReviewCreationRequest request,
-                                                    @RequestPart(value = "images", required = false) List<MultipartFile> images) {
+    public ApiResponse<ReviewResponse> createReview(@RequestBody @Valid ReviewCreationRequest request) {
         return ApiResponse.<ReviewResponse>builder()
-                .result(reviewService.createReview(request, images))
+                .result(reviewService.createReview(request, null))
                 .build();
     }
 

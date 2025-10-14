@@ -19,5 +19,34 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
+  
+  # JavaMail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: ${MAIL_HOST:smtp.gmail.com}
+        debug: true
+    default-encoding: UTF-8
+
+# Debug logging
+logging:
+  level:
+    org.springframework.mail: DEBUG
+    com.sun.mail: DEBUG
+  
+  # Thymeleaf Configuration for email templates
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/email/
+    suffix: .html
 
 

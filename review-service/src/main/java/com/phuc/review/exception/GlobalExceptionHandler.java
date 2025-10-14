@@ -1,7 +1,6 @@
 package com.phuc.review.exception;
 
 import com.phuc.review.dto.ApiResponse;
-import com.phuc.review.exception.AppException;
 import feign.FeignException;
 import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;

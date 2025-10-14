@@ -3,7 +3,6 @@ package com.phuc.promotion.service;
 import com.phuc.promotion.dto.request.PromotionCreationRequest;
 import com.phuc.promotion.dto.request.PromotionUpdateRequest;
 import com.phuc.promotion.dto.response.PromotionResponse;
-import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface PromotionService {

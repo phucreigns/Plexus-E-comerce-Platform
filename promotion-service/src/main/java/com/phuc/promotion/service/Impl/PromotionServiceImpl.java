@@ -24,6 +24,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.time.LocalDate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 
 @Slf4j
@@ -85,6 +88,9 @@ public class PromotionServiceImpl implements PromotionService {
         }
 
         double eligibleCartTotal = calculateEligibleCartTotal(cartResponse, promotion);
+        
+        log.info("Cart total: {}, Eligible cart total: {}, Min order value: {}", 
+                cartResponse.getTotalAmount(), eligibleCartTotal, promotion.getConditions().getMinOrderValue());
 
         if (eligibleCartTotal < promotion.getConditions().getMinOrderValue()) {
             log.error("Eligible order value is less than the minimum required for promoCode {}", promoCode);
@@ -99,8 +105,8 @@ public class PromotionServiceImpl implements PromotionService {
         totalDiscount = Math.min(totalDiscount, maxDiscountAllowed);
 
         if (totalDiscount > 0) {
-            cartResponse.setTotal(cartResponse.getTotal() - totalDiscount);
-            updateCartTotal(cartResponse.getUsername(), cartResponse.getTotal());
+            cartResponse.setTotalAmount(cartResponse.getTotalAmount() - totalDiscount);
+            updateCartTotal(cartResponse.getEmail(), cartResponse.getTotalAmount());
 
             promotion.setUsageCount(promotion.getUsageCount() + 1);
             promotionRepository.save(promotion);
@@ -172,26 +178,76 @@ public class PromotionServiceImpl implements PromotionService {
 
     private CartResponse getCartForPromotion(String promoCode) {
         try {
-            return cartClient.getMyCart().getResult();
+            String email = getCurrentUserEmail();
+            if (email == null || email.isBlank()) {
+                log.error("Missing email in JWT when applying promoCode {}", promoCode);
+                throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
+            return cartClient.getCartByEmail(email);
         } catch (FeignException e) {
             log.error("Failed to fetch cart for promoCode {}: {}", promoCode, e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
         }
     }
 
+    private String getCurrentUserEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Jwt jwt) {
+            String email = jwt.getClaim("email");
+            if (email == null || email.isBlank()) {
+                // fallback custom claim if needed
+                email = jwt.getClaim("preferred_username");
+            }
+            return email;
+        }
+        return null;
+    }
+
     private double calculateEligibleCartTotal(CartResponse cartResponse, Promotion promotion) {
+        // If no specific products/shops are specified, use total cart amount
+        boolean shopListEmptyOrNull = promotion.getConditions() == null
+                || promotion.getConditions().getApplicableShops() == null
+                || promotion.getConditions().getApplicableShops().isEmpty();
+        boolean productListEmptyOrNull = promotion.getConditions() == null
+                || promotion.getConditions().getApplicableProducts() == null
+                || promotion.getConditions().getApplicableProducts().isEmpty();
+
+        if (shopListEmptyOrNull && productListEmptyOrNull) {
+            // Apply to all items - use total cart amount
+            log.info("No specific products/shops - using total cart amount: {}", cartResponse.getTotalAmount());
+            return cartResponse.getTotalAmount();
+        }
+
+        // Calculate eligible amount for specific products/shops
         double eligibleCartTotal = 0;
+        log.info("Calculating eligible amount for specific products/shops. Cart items: {}", cartResponse.getItems().size());
+        
         for (CartItemResponse item : cartResponse.getItems()) {
             String productId = item.getProductId();
             String shopId = getShopIdByProductId(productId);
 
-            boolean isApplicableForShop = promotion.getConditions().getApplicableShops().contains(shopId);
-            boolean isApplicableForProduct = promotion.getConditions().getApplicableProducts().contains(productId);
+            boolean isApplicableForShop = shopListEmptyOrNull
+                    || promotion.getConditions().getApplicableShops().contains(shopId);
+            boolean isApplicableForProduct = productListEmptyOrNull
+                    || promotion.getConditions().getApplicableProducts().contains(productId);
+
+            log.info("Item {} - Shop: {}, Product: {}, Applicable for shop: {}, Applicable for product: {}", 
+                    productId, shopId, productId, isApplicableForShop, isApplicableForProduct);
 
             if (isApplicableForShop && isApplicableForProduct) {
-                eligibleCartTotal += item.getTotalPrice() * item.getQuantity();
+                // Use cart total amount divided by number of items as approximation
+                // This is a simplified approach since we don't have individual item prices
+                double itemRatio = 1.0 / cartResponse.getItems().size();
+                double itemAmount = cartResponse.getTotalAmount() * itemRatio;
+                eligibleCartTotal += itemAmount;
+                log.info("Added item amount: {} (ratio: {})", itemAmount, itemRatio);
             }
         }
+        log.info("Final eligible cart total: {}", eligibleCartTotal);
         return eligibleCartTotal;
     }
 
@@ -220,18 +276,18 @@ public class PromotionServiceImpl implements PromotionService {
 
             switch (promotion.getType()) {
                 case FIXED -> totalDiscount += promotion.getDiscount().getAmount();
-                case PERCENTAGE -> totalDiscount += cartResponse.getTotal() * (promotion.getDiscount().getPercentage() / 100);
+                case PERCENTAGE -> totalDiscount += cartResponse.getTotalAmount() * (promotion.getDiscount().getPercentage() / 100);
                 default -> log.error("Unsupported promotion type: {}", promotion.getType());
             }
         }
         return totalDiscount;
     }
 
-    private void updateCartTotal(String username, double total) {
+    private void updateCartTotal(String email, double total) {
         try {
-            cartClient.updateCartTotal(username, total);
+            cartClient.updateCartTotal(email, total);
         } catch (FeignException e) {
-            log.error("Failed to update cart total for username {}: {}", username, e.getMessage());
+            log.error("Failed to update cart total for email {}: {}", email, e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
         }
     }

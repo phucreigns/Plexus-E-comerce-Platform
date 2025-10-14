@@ -26,12 +26,12 @@ public class Review {
     String reviewId;
 
     @Indexed
+    String email;
+
+    @Indexed
     String productId;
 
     String variantId;
-
-    @Indexed
-    String email;
 
     List<String> imageUrls;
 

@@ -15,14 +15,14 @@ import java.util.List;
 @Builder
 @Getter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CartCreateRequest {
+public class CartCreationRequest {
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     String email;
 
     @NotEmpty(message = "Cart must have at least one item")
     @Valid
-    List<CartItemCreateRequest> items;
+    List<CartItemCreationRequest> items;
 
     public BigDecimal TotalAmount() {
         return null;

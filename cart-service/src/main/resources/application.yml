@@ -20,3 +20,18 @@ spring:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
 
+
+product:
+  service:
+    url: ${PRODUCT_SERVICE_URL}
+order:
+  service:
+    url: ${ORDER_SERVICE_URL}
+promotion:
+  service:
+    url: ${PROMOTION_SERVICE_URL}
+shop:
+  service:
+    url: ${SHOP_SERVICE_URL}
+
+

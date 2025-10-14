@@ -1,6 +1,6 @@
 package com.phuc.cart.service.Impl;
 
-import com.phuc.cart.dto.request.CartCreateRequest;
+import com.phuc.cart.dto.request.CartCreationRequest;
 import com.phuc.cart.dto.response.CartItemResponse;
 import com.phuc.cart.dto.response.CartResponse;
 import com.phuc.cart.entity.Cart;
@@ -29,7 +29,7 @@ public class CartServiceImpl implements CartService {
     ProductClient productClient;
 
     @Override
-    public CartResponse createCart(CartCreateRequest request) {
+    public CartResponse createCart(CartCreationRequest request) {
         try {
             log.info("Creating cart for email: {}", request.getEmail());
             log.info("Cart items: {}", request.getItems());
@@ -106,7 +106,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartResponse updateCart(Long id, CartCreateRequest request) {
+    public CartResponse updateCart(Long id, CartCreationRequest request) {
         Cart existingCart = cartRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cart not found with id: " + id));
 
@@ -144,6 +144,38 @@ public class CartServiceImpl implements CartService {
         return cartMapper.toCartResponse(updatedCart);
     }
 
+    @Override
+    public void updateCartTotal(String email, double total) {
+        log.info("Updating cart total for email: {} to: {}", email, total);
+        
+        // Find cart by email
+        List<Cart> carts = cartRepository.findAll();
+        Cart cart = carts.stream()
+                .filter(c -> email.equals(c.getEmail()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Cart not found for email: " + email));
+        
+        // Update total amount
+        cart.setTotalAmount(BigDecimal.valueOf(total));
+        cart.setUpdatedAt(LocalDateTime.now());
+        
+        cartRepository.save(cart);
+        log.info("Cart total updated successfully for email: {}", email);
+    }
+
+    @Override
+    public CartResponse getCartByEmail(String email) {
+        log.info("Getting cart for email: {}", email);
+        
+        List<Cart> carts = cartRepository.findAll();
+        Cart cart = carts.stream()
+                .filter(c -> email.equals(c.getEmail()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Cart not found for email: " + email));
+        
+        return cartMapper.toCartResponse(cart);
+    }
+
     // 👇 Đây là giả định, bạn có thể thay bằng FeignClient hoặc gọi service Product để lấy giá
     private BigDecimal getProductPrice(CartItem item) {
         // Ví dụ cố định
@@ -153,18 +185,18 @@ public class CartServiceImpl implements CartService {
     /**
      * Validate that all productIds exist in Product Service
      */
-    private void validateProductIds(List<com.phuc.cart.dto.request.CartItemCreateRequest> items) {
-        for (com.phuc.cart.dto.request.CartItemCreateRequest item : items) {
+    private void validateProductIds(List<com.phuc.cart.dto.request.CartItemCreationRequest> items) {
+        for (com.phuc.cart.dto.request.CartItemCreationRequest item : items) {
             try {
-                log.info("Validating productId: {}", item.getProductId());
-                var response = productClient.checkProductExists(item.getProductId());
-                if (response == null || !Boolean.TRUE.equals(response.getResult())) {
-                    throw new RuntimeException("Product with ID " + item.getProductId() + " does not exist");
+                log.info("Validating productId: {} with variantId: {}", item.getProductId(), item.getVariantId());
+                var response = productClient.existsProduct(item.getProductId(), item.getVariantId());
+                if (response == null || !response.getResult().isExists()) {
+                    throw new RuntimeException("Product with ID " + item.getProductId() + " and variant " + item.getVariantId() + " does not exist");
                 }
-                log.info("ProductId {} validated successfully", item.getProductId());
+                log.info("ProductId {} with variantId {} validated successfully", item.getProductId(), item.getVariantId());
             } catch (Exception e) {
-                log.error("Error validating productId {}: {}", item.getProductId(), e.getMessage());
-                throw new RuntimeException("Failed to validate product with ID " + item.getProductId() + ": " + e.getMessage());
+                log.error("Error validating productId {} with variantId {}: {}", item.getProductId(), item.getVariantId(), e.getMessage());
+                throw new RuntimeException("Failed to validate product with ID " + item.getProductId() + " and variant " + item.getVariantId() + ": " + e.getMessage());
             }
         }
     }
