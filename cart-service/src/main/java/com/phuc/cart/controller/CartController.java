@@ -41,10 +41,8 @@ public class CartController {
         return ResponseEntity.ok(cartService.updateCart(id, request));
     }
 
-    // Endpoints for Promotion Service integration
     @GetMapping("/")
     public ResponseEntity<CartResponse> getMyCart() {
-        // For now, return the first cart (in real app, get by authenticated user)
         List<CartResponse> carts = cartService.getAllCarts();
         if (carts.isEmpty()) {
             return ResponseEntity.notFound().build();

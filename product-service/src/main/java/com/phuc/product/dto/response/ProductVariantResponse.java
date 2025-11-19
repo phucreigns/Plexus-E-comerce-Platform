@@ -2,8 +2,6 @@ package com.phuc.product.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.math.BigDecimal;
 import java.util.Map;
 
 @Data

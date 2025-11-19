@@ -6,6 +6,8 @@ import com.phuc.order.dto.response.OrderResponse;
 import com.phuc.order.entity.Order;
 import com.phuc.order.exception.AppException;
 import com.phuc.order.exception.ErrorCode;
+import com.phuc.order.httpclient.PaymentClient;
+import com.phuc.order.httpclient.dto.CreateCheckoutSessionRequest;
 import com.phuc.order.httpclient.ProductClient;
 import com.phuc.order.mapper.OrderMapper;
 import com.phuc.order.repository.OrderRepository;
@@ -29,6 +31,7 @@ import java.util.List;
 public class OrderServiceImpl implements OrderService {
 
     ProductClient productClient;
+    PaymentClient paymentClient;
     OrderRepository orderRepository;
     OrderMapper orderMapper;
 
@@ -39,14 +42,17 @@ public class OrderServiceImpl implements OrderService {
 
         validateStockAvailability(request.getItems());
 
+        double calculatedTotal = calculateOrderTotal(request.getItems());
+        
         Order order = orderMapper.toOrder(request);
+        order.setTotal(calculatedTotal);
         order.setEmail(email);
         order.setStatus("PENDING");
         orderRepository.save(order);
 
         updateStockAndSoldQuantity(request.getItems());
 
-        log.info("Order created successfully for user: {}, orderId: {}", email, order.getOrderId());
+        log.info("Order created successfully for user: {}, orderId: {}, total: {}", email, order.getOrderId(), order.getTotal());
 
         return orderMapper.toOrderResponse(order);
     }
@@ -63,17 +69,32 @@ public class OrderServiceImpl implements OrderService {
 
         validateStockAvailability(request.getItems());
 
+        double calculatedTotal = calculateOrderTotal(request.getItems());
+
         Order order = orderMapper.toOrder(request);
-        order.setTotal(calculateOrderTotal(request.getItems()));
+        order.setTotal(calculatedTotal);
         order.setEmail(email);
         order.setStatus("PENDING");
         orderRepository.save(order);
 
         updateStockAndSoldQuantity(request.getItems());
 
-        log.info("Buy Now order created successfully for user: {}, orderId: {}", email, order.getOrderId());
+        log.info("Buy Now order created successfully for user: {}, orderId: {}, total: {}", email, order.getOrderId(), order.getTotal());
 
-        return orderMapper.toOrderResponse(order);
+        try {
+            var sessionReq = com.phuc.order.httpclient.dto.CreateCheckoutSessionRequest.builder()
+                    .amount(java.math.BigDecimal.valueOf(order.getTotal()))
+                    .productName("Order #" + order.getOrderId())
+                    .orderId(order.getOrderId())
+                    .build();
+            var sessionResp = paymentClient.createChargeSession(sessionReq);
+            var orderResp = orderMapper.toOrderResponse(order);
+            orderResp.setSessionUrl(sessionResp.getResult().getSessionUrl());
+            return orderResp;
+        } catch (FeignException e) {
+            log.error("Error creating checkout session for order {}: {}", order.getOrderId(), e.getMessage());
+            throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+        }
     }
 
     @Override
@@ -82,8 +103,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
+        String oldStatus = order.getStatus();
         order.setStatus(newStatus);
         orderRepository.save(order);
+        
+        log.info("✅ Order {} status updated from {} to {}", orderId, oldStatus, newStatus);
     }
 
     @Override
@@ -147,9 +171,39 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.toOrderResponse(order);
     }
 
+    @Override
+    @Transactional
+    public String createCheckoutSession(Long orderId) {
+        String email = getCurrentEmail();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        if (!order.getEmail().equals(email)) {
+            throw new AppException(ErrorCode.ORDER_IS_NOT_YOURS);
+        }
+
+        CreateCheckoutSessionRequest req = CreateCheckoutSessionRequest.builder()
+                .amount(java.math.BigDecimal.valueOf(order.getTotal()))
+                .productName("Order #" + orderId)
+                .orderId(orderId)
+                .build();
+        try {
+            var resp = paymentClient.createChargeSession(req);
+            return resp.getResult().getSessionUrl();
+        } catch (FeignException e) {
+            log.error("Error creating checkout session for order {}: {}", orderId, e.getMessage());
+            throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+        }
+    }
+
     private String getCurrentEmail() {
         Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return jwt.getClaim("email");
+    }
+
+    private String getCurrentUsername() {
+        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return jwt.getClaim("preferred_username");
     }
 
     private double calculateOrderTotal(List<OrderItemCreationRequest> items) {

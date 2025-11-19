@@ -15,15 +15,14 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
-    Product toProduct(ProductCreationRequest request);
+      Product toProduct(ProductCreationRequest request);
 
-    ProductResponse toProductResponse(Product product);
+      ProductResponse toProductResponse(Product product);
 
-    void updateProduct(@MappingTarget Product product, ProductUpdateRequest request);
+      void updateProduct(@MappingTarget Product product, ProductUpdateRequest request);
 
-    List<ProductResponse> toProductResponses(List<Product> products);
+      List<ProductResponse> toProductResponses(List<Product> products);
 
-    List<ProductVariant> toVariants(List<ProductVariantRequest> variantRequests);
+      List<ProductVariant> toVariants(List<ProductVariantRequest> variantRequests);
 
-    void updateProductFromRequest(@MappingTarget ProductUpdateRequest request, Product product);
 }

@@ -17,4 +17,5 @@ public class OrderResponse {
     String status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    String sessionUrl;
 }

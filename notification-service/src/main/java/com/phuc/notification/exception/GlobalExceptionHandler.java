@@ -1,7 +1,6 @@
 package com.phuc.notification.exception;
 
 import com.phuc.notification.dto.ApiResponse;
-import feign.FeignException;
 import jakarta.validation.ConstraintViolation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -40,11 +39,6 @@ public class GlobalExceptionHandler {
         return buildResponse(exception.getErrorCode(), exception.getErrorCode().getMessage());
     }
 
-    @ExceptionHandler(FeignException.class)
-    ResponseEntity<ApiResponse<Object>> handleFeignException(FeignException exception) {
-        log.error("Feign exception occurred: {}", exception.getMessage());
-        return buildResponse(ErrorCode.EXTERNAL_SERVICE_ERROR, ErrorCode.EXTERNAL_SERVICE_ERROR.getMessage());
-    }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     ResponseEntity<ApiResponse<Object>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException exception) {

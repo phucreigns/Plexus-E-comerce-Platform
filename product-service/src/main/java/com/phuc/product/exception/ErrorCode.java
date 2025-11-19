@@ -24,6 +24,7 @@ public enum ErrorCode {
     MISSING_REQUIRED_PARAMETER(1009, "A required parameter is missing. Please ensure all required fields are provided.", HttpStatus.BAD_REQUEST),
     INVALID_REQUEST_FORMAT(1011, "Invalid request format. Please check your JSON syntax.", HttpStatus.BAD_REQUEST),
     SERVICE_UNAVAILABLE(1012, "The service is currently unavailable. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE),
+    UNSUPPORTED_MEDIA_TYPE(1013, "The request content type is not supported. Please use multipart/form-data for file uploads or application/json for JSON requests.", HttpStatus.UNSUPPORTED_MEDIA_TYPE),
 
     PRODUCT_NOT_FOUND(2000, "The specified product could not be found.", HttpStatus.NOT_FOUND),
     CATEGORY_NOT_FOUND(2001, "The specified category could not be found.", HttpStatus.NOT_FOUND),

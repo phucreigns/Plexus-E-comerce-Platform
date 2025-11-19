@@ -24,3 +24,7 @@ spring:
 product:
   service:
     url: ${PRODUCT_SERVICE_URL}
+
+payment:
+  service:
+    url: ${PAYMENT_SERVICE_URL:http://localhost:8099/payment}

@@ -20,8 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,7 +39,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"categories", "categoryById", "categoriesByShop"}, allEntries = true)
     public CategoryResponse createCategory(CategoryCreationRequest request) {
+        log.info("🗑️ [CACHE EVICT] Clearing all category caches - creating new category");
         String email = getCurrentEmail();
         ShopResponse shopResponse = getShopByOwnerEmail(email);
 
@@ -50,7 +54,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"categories", "categoryById", "categoriesByShop"}, allEntries = true)
+    @CachePut(value = "categoryById", key = "#categoryId")
     public CategoryResponse updateCategory(String categoryId, CategoryUpdateRequest request) {
+        log.info("🗑️ [CACHE EVICT] Clearing all category caches - updating category {}", categoryId);
         String email = getCurrentEmail();
         ShopResponse shopResponse = getShopByOwnerEmail(email);
 
@@ -64,7 +71,9 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"categories", "categoryById", "categoriesByShop"}, allEntries = true)
     public void deleteCategory(String categoryId) {
+        log.info("🗑️ [CACHE EVICT] Clearing all category caches - deleting category {}", categoryId);
         String email = getCurrentEmail();
         ShopResponse shopResponse = getShopByOwnerEmail(email);
 
@@ -75,18 +84,30 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @Cacheable(value = "categories", key = "'all'")
     public List<CategoryResponse> getAllCategories() {
-        return categoryMapper.toCategoryResponses(categoryRepository.findAll());
+        log.info("🔍 [CACHE MISS] Querying all categories from MongoDB");
+        List<CategoryResponse> responses = categoryMapper.toCategoryResponses(categoryRepository.findAll());
+        log.info("✅ [CACHE MISS] Retrieved {} categories from MongoDB, caching to Redis", responses.size());
+        return responses;
     }
 
     @Override
+    @Cacheable(value = "categoryById", key = "#categoryId")
     public CategoryResponse getCategoryById(String categoryId) {
-        return categoryMapper.toCategoryResponse(findCategoryById(categoryId));
+        log.info("🔍 [CACHE MISS] Querying category from MongoDB - categoryId={}", categoryId);
+        CategoryResponse response = categoryMapper.toCategoryResponse(findCategoryById(categoryId));
+        log.info("✅ [CACHE MISS] Retrieved category from MongoDB, caching to Redis - categoryId={}", categoryId);
+        return response;
     }
 
     @Override
+    @Cacheable(value = "categoriesByShop", key = "#shopId")
     public List<CategoryResponse> getCategoriesByShopId(String shopId) {
-        return categoryMapper.toCategoryResponses(categoryRepository.findByShopId(shopId));
+        log.info("🔍 [CACHE MISS] Querying categories from MongoDB - shopId={}", shopId);
+        List<CategoryResponse> responses = categoryMapper.toCategoryResponses(categoryRepository.findByShopId(shopId));
+        log.info("✅ [CACHE MISS] Retrieved {} categories from MongoDB, caching to Redis - shopId={}", responses.size(), shopId);
+        return responses;
     }
 
     private String getCurrentEmail() {

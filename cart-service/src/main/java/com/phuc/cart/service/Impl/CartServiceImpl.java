@@ -5,10 +5,13 @@ import com.phuc.cart.dto.response.CartItemResponse;
 import com.phuc.cart.dto.response.CartResponse;
 import com.phuc.cart.entity.Cart;
 import com.phuc.cart.entity.CartItem;
+import com.phuc.cart.exception.AppException;
+import com.phuc.cart.exception.ErrorCode;
 import com.phuc.cart.httpclient.ProductClient;
 import com.phuc.cart.mapper.CartMapper;
 import com.phuc.cart.repository.CartRepository;
 import com.phuc.cart.service.CartService;
+import feign.FeignException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -34,10 +37,8 @@ public class CartServiceImpl implements CartService {
             log.info("Creating cart for email: {}", request.getEmail());
             log.info("Cart items: {}", request.getItems());
             
-            // Validate all productIds exist
             validateProductIds(request.getItems());
             
-            // Manual mapping instead of MapStruct
             Cart cart = Cart.builder()
                     .email(request.getEmail())
                     .build();
@@ -51,7 +52,6 @@ public class CartServiceImpl implements CartService {
                     .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
             cart.setItems(items);
 
-            // Tính tổng tiền
             BigDecimal total = items.stream()
                     .map(item -> BigDecimal.valueOf(item.getQuantity()).multiply(getProductPrice(item)))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -62,7 +62,6 @@ public class CartServiceImpl implements CartService {
             Cart saved = cartRepository.save(cart);
             log.info("Cart saved successfully with ID: {}", saved.getCartId());
             
-            // Manual mapping to response
             return CartResponse.builder()
                     .cartId(saved.getCartId())
                     .email(saved.getEmail())
@@ -77,9 +76,11 @@ public class CartServiceImpl implements CartService {
                     .createdAt(saved.getCreatedAt())
                     .updatedAt(saved.getUpdatedAt())
                     .build();
+        } catch (AppException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error creating cart: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create cart: " + e.getMessage(), e);
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
         }
     }
 
@@ -93,14 +94,14 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartResponse getCartById(Long id) {
         Cart cart = cartRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
         return cartMapper.toCartResponse(cart);
     }
 
     @Override
     public void deleteCart(Long id) {
         if (!cartRepository.existsById(id)) {
-            throw new RuntimeException("Cart not found");
+            throw new AppException(ErrorCode.CART_NOT_FOUND);
         }
         cartRepository.deleteById(id);
     }
@@ -108,14 +109,11 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartResponse updateCart(Long id, CartCreationRequest request) {
         Cart existingCart = cartRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cart not found with id: " + id));
+                .orElseThrow(() -> new AppException(ErrorCode.CART_NOT_FOUND));
 
-        // Validate all productIds exist
         validateProductIds(request.getItems());
 
-        // Cập nhật email và tổng tiền nếu cần
         existingCart.setEmail(request.getEmail());
-        // Calculate total amount from items
         BigDecimal total = request.getItems().stream()
                 .map(itemReq -> BigDecimal.valueOf(itemReq.getQuantity()).multiply(getProductPrice(
                         CartItem.builder()
@@ -127,7 +125,6 @@ public class CartServiceImpl implements CartService {
         existingCart.setTotalAmount(total);
         existingCart.setUpdatedAt(LocalDateTime.now());
 
-        // Xoá các item cũ và thêm lại item mới
         List<CartItem> newItems = request.getItems().stream()
                 .map(itemReq -> CartItem.builder()
                         .productId(itemReq.getProductId())
@@ -138,7 +135,6 @@ public class CartServiceImpl implements CartService {
 
         existingCart.setItems(newItems);
 
-        // Lưu lại giỏ hàng
         Cart updatedCart = cartRepository.save(existingCart);
 
         return cartMapper.toCartResponse(updatedCart);
@@ -148,14 +144,11 @@ public class CartServiceImpl implements CartService {
     public void updateCartTotal(String email, double total) {
         log.info("Updating cart total for email: {} to: {}", email, total);
         
-        // Find cart by email
-        List<Cart> carts = cartRepository.findAll();
-        Cart cart = carts.stream()
-                .filter(c -> email.equals(c.getEmail()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Cart not found for email: " + email));
+        Cart cart = cartRepository.findByEmail(email);
+        if (cart == null) {
+            throw new AppException(ErrorCode.CART_NOT_FOUND);
+        }
         
-        // Update total amount
         cart.setTotalAmount(BigDecimal.valueOf(total));
         cart.setUpdatedAt(LocalDateTime.now());
         
@@ -167,36 +160,60 @@ public class CartServiceImpl implements CartService {
     public CartResponse getCartByEmail(String email) {
         log.info("Getting cart for email: {}", email);
         
-        List<Cart> carts = cartRepository.findAll();
-        Cart cart = carts.stream()
-                .filter(c -> email.equals(c.getEmail()))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Cart not found for email: " + email));
+        Cart cart = cartRepository.findByEmail(email);
+        if (cart == null) {
+            throw new AppException(ErrorCode.CART_NOT_FOUND);
+        }
         
         return cartMapper.toCartResponse(cart);
     }
 
-    // 👇 Đây là giả định, bạn có thể thay bằng FeignClient hoặc gọi service Product để lấy giá
+
     private BigDecimal getProductPrice(CartItem item) {
-        // Ví dụ cố định
-        return BigDecimal.valueOf(100000); // 100.000 đ / sản phẩm
+        try {
+            var response = productClient.getProductPriceById(item.getProductId(), item.getVariantId());
+            if (response == null || response.getResult() == null) {
+                log.error("Product price not found for productId: {}, variantId: {}", item.getProductId(), item.getVariantId());
+                throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+            }
+            return BigDecimal.valueOf(response.getResult());
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+            }
+            log.error("Error fetching product price for productId: {}, variantId: {}: {}", 
+                    item.getProductId(), item.getVariantId(), e.getMessage());
+            throw new AppException(ErrorCode.PRODUCT_SERVICE_UNAVAILABLE);
+        } catch (AppException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Error fetching product price for productId: {}, variantId: {}: {}", 
+                    item.getProductId(), item.getVariantId(), e.getMessage());
+            throw new AppException(ErrorCode.PRODUCT_SERVICE_UNAVAILABLE);
+        }
     }
 
-    /**
-     * Validate that all productIds exist in Product Service
-     */
+
     private void validateProductIds(List<com.phuc.cart.dto.request.CartItemCreationRequest> items) {
         for (com.phuc.cart.dto.request.CartItemCreationRequest item : items) {
             try {
                 log.info("Validating productId: {} with variantId: {}", item.getProductId(), item.getVariantId());
                 var response = productClient.existsProduct(item.getProductId(), item.getVariantId());
                 if (response == null || !response.getResult().isExists()) {
-                    throw new RuntimeException("Product with ID " + item.getProductId() + " and variant " + item.getVariantId() + " does not exist");
+                    throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
                 }
                 log.info("ProductId {} with variantId {} validated successfully", item.getProductId(), item.getVariantId());
+            } catch (FeignException e) {
+                if (e.status() == 404) {
+                    throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+                }
+                log.error("Error validating productId {} with variantId {}: {}", item.getProductId(), item.getVariantId(), e.getMessage());
+                throw new AppException(ErrorCode.PRODUCT_SERVICE_UNAVAILABLE);
+            } catch (AppException e) {
+                throw e;
             } catch (Exception e) {
                 log.error("Error validating productId {} with variantId {}: {}", item.getProductId(), item.getVariantId(), e.getMessage());
-                throw new RuntimeException("Failed to validate product with ID " + item.getProductId() + " and variant " + item.getVariantId() + ": " + e.getMessage());
+                throw new AppException(ErrorCode.PRODUCT_SERVICE_UNAVAILABLE);
             }
         }
     }

@@ -14,8 +14,8 @@ public class OpenAPIConfig {
     @Bean
     public OpenAPI NotificationServiceAPI() {
         return new OpenAPI()
-                .info(new Info().title("File Service API")
-                        .description("This is the REST API for File Service")
+                .info(new Info().title("Notification Service API")
+                        .description("This is the REST API for Notification Service")
                         .version("v0.0.1")
                         .license(new License().name("Apache 2.0")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))

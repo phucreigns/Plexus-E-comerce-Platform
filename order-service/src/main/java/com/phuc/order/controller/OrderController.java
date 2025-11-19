@@ -7,12 +7,14 @@ import com.phuc.order.service.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -77,5 +79,21 @@ public class OrderController {
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         orderService.deleteOrder(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Webhook from payment-service to mark order paid
+    @PostMapping("/webhook/payment/{id}/success")
+    public ResponseEntity<Void> markOrderPaid(@PathVariable Long id) {
+        log.info("Received webhook callback to mark order {} as PAID", id);
+        orderService.updateOrderStatus(id, "PAID");
+        log.info("✅ Order {} successfully marked as PAID via webhook", id);
+        return ResponseEntity.ok().build();
+    }
+
+    // Create Stripe checkout session for an order
+    @PostMapping("/{id}/checkout-session")
+    public ResponseEntity<String> createCheckoutSession(@PathVariable Long id) {
+        String url = orderService.createCheckoutSession(id);
+        return ResponseEntity.ok(url);
     }
 }

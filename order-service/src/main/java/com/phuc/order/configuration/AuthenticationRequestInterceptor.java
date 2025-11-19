@@ -19,6 +19,16 @@ public class AuthenticationRequestInterceptor implements RequestInterceptor {
                 template.header("Authorization", authHeader);
             }
         }
+        
+        // Ensure Content-Type is set to application/json for POST/PUT requests with body
+        if (template.body() != null && template.body().length > 0) {
+            String method = template.method();
+            if ("POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method)) {
+                // Remove any existing Content-Type header and set to application/json
+                template.removeHeader("Content-Type");
+                template.header("Content-Type", "application/json");
+            }
+        }
     }
 
 }

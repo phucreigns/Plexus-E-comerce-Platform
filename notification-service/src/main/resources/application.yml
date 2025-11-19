@@ -6,11 +6,10 @@ server:
 spring:
   application:
     name: notification-service
-  datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${NOTIFICATION_SERVICE_DB:NotificationService}
-    driver-class-name: org.postgresql.Driver
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${NOTIFICATION_SERVICE_DB:NotificationService}?authSource=admin
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,13 +18,18 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/email/
+    suffix: .html
+
   
   # JavaMail Configuration
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -34,19 +38,14 @@ spring:
             enable: true
           ssl:
             trust: ${MAIL_HOST:smtp.gmail.com}
-        debug: true
+        debug: false
     default-encoding: UTF-8
 
-# Debug logging
 logging:
   level:
-    org.springframework.mail: DEBUG
-    com.sun.mail: DEBUG
-  
-  # Thymeleaf Configuration for email templates
-  thymeleaf:
-    cache: false
-    prefix: classpath:/templates/email/
-    suffix: .html
+    "[org.springframework.mail]": DEBUG
+    "[com.sun.mail]": DEBUG
 
-
+notification:
+  email:
+    from-name: ${EMAIL_FROM_NAME:Notification Service}

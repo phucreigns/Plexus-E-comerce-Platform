@@ -20,12 +20,12 @@ import java.util.List;
 public class UserController {
     UserService userService;
 
-    @GetMapping("/auth/login")
+    @GetMapping("/login")
     public ResponseEntity<TokenResponse> login(@RequestParam(required = false) String code) {
         return userService.login(code);
     }
 
-    @PostMapping("/auth/refresh")
+    @PostMapping("/refresh")
     public ApiResponse<TokenResponse> refresh(@RequestBody @Valid RefreshTokenRequest request) {
         return ApiResponse.<TokenResponse>builder()
                 .result(userService.refreshToken(request))
@@ -40,7 +40,7 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/logout")
+    @GetMapping("/logout")
     public ResponseEntity<Void> logout() {
         return userService.logout();
     }

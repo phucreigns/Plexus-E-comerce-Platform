@@ -11,7 +11,7 @@
 	<groupId>com.order</groupId>
 	<artifactId>order-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>auth</name>
+	<name>order</name>
 	<description>Order Service</description>
     <url/>
     <licenses>

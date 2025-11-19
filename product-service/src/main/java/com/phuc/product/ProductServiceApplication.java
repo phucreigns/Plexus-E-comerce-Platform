@@ -3,10 +3,12 @@ package com.phuc.product;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
 @SpringBootApplication
 @EnableFeignClients
+@EnableCaching
 public class ProductServiceApplication {
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.configure()
@@ -24,7 +26,7 @@ public class ProductServiceApplication {
         System.setProperty("SHOP_SERVICE_URL", dotenv.get("SHOP_SERVICE_URL", ""));
         System.setProperty("FILE_SERVICE_URL", dotenv.get("FILE_SERVICE_URL", ""));
         System.setProperty("ORDER_SERVICE_URL", dotenv.get("ORDER_SERVICE_URL", ""));
-		
+		System.setProperty("MONGO_PORT", dotenv.get("MONGO_PORT", ""));
         System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
 
 	}

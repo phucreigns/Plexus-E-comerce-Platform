@@ -9,6 +9,26 @@ spring:
   data:
     mongodb:
       uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${PRODUCT_SERVICE_DB:ProductService}?authSource=admin
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:123456}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+      cache-null-values: false
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:50MB}
+      max-request-size: ${MAX_REQUEST_SIZE:200MB}
+      enabled: true
 
 
   security:
@@ -16,6 +36,8 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
+
+
 
 shop:
   service:

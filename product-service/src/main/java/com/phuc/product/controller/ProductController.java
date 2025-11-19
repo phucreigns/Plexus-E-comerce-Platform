@@ -11,13 +11,13 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.MediaType;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
-
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -26,21 +26,23 @@ public class ProductController {
 
     ProductService productService;
 
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ProductResponse> createProduct(
-            @RequestBody @Valid ProductCreationRequest request) {
+            @RequestPart("request") @Valid ProductCreationRequest request,
+            @RequestPart(value = "productImages", required = false) List<MultipartFile> productImages) {
         log.info("Received product creation request: {}", request);
         return ApiResponse.<ProductResponse>builder()
-                .result(productService.createProduct(request))
+                .result(productService.createProduct(request, productImages))
                 .build();
     }
 
 
-    @PutMapping("/{productId}")
+    @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ProductResponse> updateProduct(@PathVariable String productId,
-                                                      @RequestBody @Valid ProductUpdateRequest request) {
+                                                      @RequestPart("request") @Valid ProductUpdateRequest request,
+                                                      @RequestPart(value = "productImages", required = false) List<MultipartFile> productImages) {
         return ApiResponse.<ProductResponse>builder()
-                .result(productService.updateProduct(productId, request))
+                .result(productService.updateProduct(productId, request, productImages))
                 .build();
     }
 

@@ -15,6 +15,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.redis.core.RedisTemplate;
 
 @Slf4j
 @Service
@@ -24,6 +25,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
     ProductRepository productRepository;
     ProductVariantMapper productVariantMapper;
+    RedisTemplate<String, Object> redisTemplate;
+    static final String PRODUCT_CACHE_PREFIX = "product:";
 
     @Override
     @Transactional
@@ -33,7 +36,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         ProductVariant newVariant = productVariantMapper.toProductVariant(request);
         product.getVariants().add(newVariant);
 
-        productRepository.save(product);
+        Product saved = productRepository.save(product);
+        cacheProduct(saved);
     }
 
     @Override
@@ -44,7 +48,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
         productVariantMapper.updateProductVariant(variant, request);
 
-        productRepository.save(product);
+        Product saved = productRepository.save(product);
+        cacheProduct(saved);
     }
 
     @Override
@@ -63,7 +68,8 @@ public class ProductVariantServiceImpl implements ProductVariantService {
         variant.setStock(newStock);
         variant.setSoldQuantity(variant.getSoldQuantity() + quantity);
 
-        productRepository.save(product);
+        Product saved = productRepository.save(product);
+        cacheProduct(saved);
     }
 
     @Override
@@ -74,7 +80,14 @@ public class ProductVariantServiceImpl implements ProductVariantService {
 
         product.getVariants().remove(variant);
 
-        productRepository.save(product);
+        Product saved = productRepository.save(product);
+        cacheProduct(saved);
+    }
+
+    private void cacheProduct(Product product) {
+        if (product == null || product.getId() == null) return;
+        String key = PRODUCT_CACHE_PREFIX + product.getId();
+        redisTemplate.opsForValue().set(key, product);
     }
 
 

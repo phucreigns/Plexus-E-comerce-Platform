@@ -17,10 +17,12 @@ public class NotificationServiceApplication {
 	}
 
 	private static void setSpringProperties(Dotenv dotenv) {
-		System.setProperty("POSTGRES_HOST", dotenv.get("POSTGRES_HOST", ""));
-		System.setProperty("POSTGRES_USERNAME", dotenv.get("POSTGRES_USERNAME", ""));
-		System.setProperty("POSTGRES_PASSWORD", dotenv.get("POSTGRES_PASSWORD", ""));
-		System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
+		System.setProperty("MONGO_HOST", dotenv.get("MONGO_HOST", ""));
+		System.setProperty("MONGO_USERNAME", dotenv.get("MONGO_USERNAME", ""));
+		System.setProperty("MONGO_PASSWORD", dotenv.get("MONGO_PASSWORD", ""));
+		System.setProperty("MONGO_PORT", dotenv.get("MONGO_PORT", ""));
+        System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
+
 		
 		// Email configuration
 		System.setProperty("MAIL_HOST", dotenv.get("MAIL_HOST", "smtp.gmail.com"));

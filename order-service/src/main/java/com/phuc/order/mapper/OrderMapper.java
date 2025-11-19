@@ -15,6 +15,7 @@ public interface OrderMapper {
     @Mapping(target = "orderId", ignore = true)
     @Mapping(target = "email", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "total", ignore = true) // Total is calculated automatically, not from request
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     Order toOrder(OrderCreationRequest request);

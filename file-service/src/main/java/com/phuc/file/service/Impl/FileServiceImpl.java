@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -123,6 +124,8 @@ public class FileServiceImpl implements FileService {
                     .url(fileUrl)
                     .size(String.valueOf(file.getSize()))
                     .type(file.getContentType())
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .build();
 
             fileRepository.save(fileEntity);

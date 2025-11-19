@@ -35,7 +35,7 @@ public class Product {
 
     String description;
 
-    // List<String> imageUrls;
+    List<String> imageUrls;
 
     @CreatedDate
     LocalDateTime createdAt;

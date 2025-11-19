@@ -3,6 +3,8 @@ package com.phuc.product.httpclient.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -10,10 +12,12 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FileResponse {
 
-    String id;
+    String fileId;
     String name;
     String type;
     String url;
-    long size;
+    String size;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
 
 }

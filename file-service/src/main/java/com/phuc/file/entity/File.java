@@ -4,6 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -24,5 +25,9 @@ public class File {
     String url;
 
     String size;
+
+    LocalDateTime createdAt;
+
+    LocalDateTime updatedAt;
 
 }

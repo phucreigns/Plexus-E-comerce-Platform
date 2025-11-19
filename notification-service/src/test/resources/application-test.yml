@@ -1,0 +1,29 @@
+server:
+  port: 0
+
+spring:
+  application:
+    name: notification-service-test
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/test-notification-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://test.auth0.com
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: test@gmail.com
+    password: test-password
+
+notification:
+  email:
+    from-name: Test Notification Service
+
+logging:
+  level:
+    org.springframework: WARN
+    com.phuc: DEBUG
