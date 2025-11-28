@@ -8,7 +8,7 @@ import java.util.List;
 public interface PromotionService {
     PromotionResponse createPromotion(PromotionCreationRequest request);
 
-    void applyPromotionCode(String promoCode);
+    void applyPromotionCode(String promoCode, Long cartId);
 
     PromotionResponse updatePromotion(String id, PromotionUpdateRequest request);
 

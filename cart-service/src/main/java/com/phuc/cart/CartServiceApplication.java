@@ -22,10 +22,31 @@ public class CartServiceApplication {
 		System.setProperty("POSTGRES_HOST", dotenv.get("POSTGRES_HOST", ""));
 		System.setProperty("POSTGRES_USERNAME", dotenv.get("POSTGRES_USERNAME", ""));
 		System.setProperty("POSTGRES_PASSWORD", dotenv.get("POSTGRES_PASSWORD", ""));
-		System.setProperty("PRODUCT_SERVICE_URL", dotenv.get("PRODUCT_SERVICE_URL", ""));
-		System.setProperty("ORDER_SERVICE_URL", dotenv.get("ORDER_SERVICE_URL", ""));
-		System.setProperty("PROMOTION_SERVICE_URL", dotenv.get("PROMOTION_SERVICE_URL", ""));
-		System.setProperty("SHOP_SERVICE_URL", dotenv.get("SHOP_SERVICE_URL", ""));
+		
+		String productServiceUrl = dotenv.get("PRODUCT_SERVICE_URL");
+		if (productServiceUrl != null && !productServiceUrl.isEmpty()) {
+			System.setProperty("PRODUCT_SERVICE_URL", productServiceUrl);
+		}
+		
+		String orderServiceUrl = dotenv.get("ORDER_SERVICE_URL");
+		if (orderServiceUrl != null && !orderServiceUrl.isEmpty()) {
+			System.setProperty("ORDER_SERVICE_URL", orderServiceUrl);
+		}
+		
+		String paymentServiceUrl = dotenv.get("PAYMENT_SERVICE_URL");
+		if (paymentServiceUrl != null && !paymentServiceUrl.isEmpty()) {
+			System.setProperty("PAYMENT_SERVICE_URL", paymentServiceUrl);
+		}
+		
+		String promotionServiceUrl = dotenv.get("PROMOTION_SERVICE_URL");
+		if (promotionServiceUrl != null && !promotionServiceUrl.isEmpty()) {
+			System.setProperty("PROMOTION_SERVICE_URL", promotionServiceUrl);
+		}
+		
+		String shopServiceUrl = dotenv.get("SHOP_SERVICE_URL");
+		if (shopServiceUrl != null && !shopServiceUrl.isEmpty()) {
+			System.setProperty("SHOP_SERVICE_URL", shopServiceUrl);
+		}
 		
 		System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
 	}

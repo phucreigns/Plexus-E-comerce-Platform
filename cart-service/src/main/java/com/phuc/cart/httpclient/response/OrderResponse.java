@@ -13,12 +13,12 @@ import java.util.List;
 public class OrderResponse {
 
     Long orderId;
-    String username;
     String email;
     List<OrderItemResponse> items;
     Double total;
     String status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
+    String sessionUrl;
     
 }

@@ -12,10 +12,12 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderCreationRequest {
 
-      String email;
       List<OrderItemCreationRequest> items;
-      double total;
-      String paymentMethod;
-      String paymentToken;
+      String shippingAddress;
+      String notes;
+      
+      // Optional: If provided, use this total instead of calculating from product prices
+      // This allows cart service to pass the total with promotion discount applied
+      Double total;
 
 }

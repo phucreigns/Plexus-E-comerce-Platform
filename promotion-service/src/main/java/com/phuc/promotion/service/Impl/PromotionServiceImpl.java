@@ -66,7 +66,7 @@ public class PromotionServiceImpl implements PromotionService {
     }
 
     @Override
-    public void applyPromotionCode(String promoCode) {
+    public void applyPromotionCode(String promoCode, Long cartId) {
         Promotion promotion = promotionRepository.findByPromoCode(promoCode)
                 .orElseThrow(() -> new AppException(ErrorCode.PROMOTION_NOT_FOUND));
 
@@ -80,17 +80,17 @@ public class PromotionServiceImpl implements PromotionService {
             throw new AppException(ErrorCode.PROMOTION_USAGE_LIMIT_REACHED);
         }
 
-        CartResponse cartResponse = getCartForPromotion(promoCode);
+        CartResponse cartResponse = getCartById(cartId);
 
         if (cartResponse == null || cartResponse.getItems() == null || cartResponse.getItems().isEmpty()) {
-            log.error("Cart is empty or not found");
+            log.error("Cart {} is empty or not found", cartId);
             throw new AppException(ErrorCode.CART_NOT_FOUND);
         }
 
         double eligibleCartTotal = calculateEligibleCartTotal(cartResponse, promotion);
         
-        log.info("Cart total: {}, Eligible cart total: {}, Min order value: {}", 
-                cartResponse.getTotalAmount(), eligibleCartTotal, promotion.getConditions().getMinOrderValue());
+        log.info("Cart {} total: {}, Eligible cart total: {}, Min order value: {}", 
+                cartId, cartResponse.getTotalAmount(), eligibleCartTotal, promotion.getConditions().getMinOrderValue());
 
         if (eligibleCartTotal < promotion.getConditions().getMinOrderValue()) {
             log.error("Eligible order value is less than the minimum required for promoCode {}", promoCode);
@@ -105,8 +105,8 @@ public class PromotionServiceImpl implements PromotionService {
         totalDiscount = Math.min(totalDiscount, maxDiscountAllowed);
 
         if (totalDiscount > 0) {
-            cartResponse.setTotalAmount(cartResponse.getTotalAmount() - totalDiscount);
-            updateCartTotal(cartResponse.getEmail(), cartResponse.getTotalAmount());
+            double newTotal = cartResponse.getTotalAmount() - totalDiscount;
+            updateCartTotalById(cartId, newTotal);
 
             promotion.setUsageCount(promotion.getUsageCount() + 1);
             promotionRepository.save(promotion);
@@ -190,6 +190,15 @@ public class PromotionServiceImpl implements PromotionService {
         }
     }
 
+    private CartResponse getCartById(Long cartId) {
+        try {
+            return cartClient.getCartById(cartId);
+        } catch (FeignException e) {
+            log.error("Failed to fetch cart {}: {}", cartId, e.getMessage());
+            throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+        }
+    }
+
     private String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
@@ -262,18 +271,34 @@ public class PromotionServiceImpl implements PromotionService {
 
     private double calculateTotalDiscount(CartResponse cartResponse, Promotion promotion) {
         double totalDiscount = 0;
+        
+        // Check if conditions have specific products/shops restrictions
+        boolean shopListEmptyOrNull = promotion.getConditions() == null
+                || promotion.getConditions().getApplicableShops() == null
+                || promotion.getConditions().getApplicableShops().isEmpty();
+        boolean productListEmptyOrNull = promotion.getConditions() == null
+                || promotion.getConditions().getApplicableProducts() == null
+                || promotion.getConditions().getApplicableProducts().isEmpty();
+        
         for (CartItemResponse item : cartResponse.getItems()) {
             String productId = item.getProductId();
             String shopId = getShopIdByProductId(productId);
 
-            boolean isApplicableForShop = promotion.getConditions().getApplicableShops().contains(shopId);
-            boolean isApplicableForProduct = promotion.getConditions().getApplicableProducts().contains(productId);
+            // Check if item is applicable for shop (if shop list is specified)
+            boolean isApplicableForShop = shopListEmptyOrNull
+                    || promotion.getConditions().getApplicableShops().contains(shopId);
+            
+            // Check if item is applicable for product (if product list is specified)
+            boolean isApplicableForProduct = productListEmptyOrNull
+                    || promotion.getConditions().getApplicableProducts().contains(productId);
 
+            // Item must match both shop and product conditions (if specified)
             if (!isApplicableForShop || !isApplicableForProduct) {
-                log.warn("Product {} is not eligible for promoCode", productId);
+                log.warn("Product {} from shop {} is not eligible for promoCode", productId, shopId);
                 continue;
             }
 
+            // Calculate discount for this eligible item
             switch (promotion.getType()) {
                 case FIXED -> totalDiscount += promotion.getDiscount().getAmount();
                 case PERCENTAGE -> totalDiscount += cartResponse.getTotalAmount() * (promotion.getDiscount().getPercentage() / 100);
@@ -288,6 +313,15 @@ public class PromotionServiceImpl implements PromotionService {
             cartClient.updateCartTotal(email, total);
         } catch (FeignException e) {
             log.error("Failed to update cart total for email {}: {}", email, e.getMessage());
+            throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    private void updateCartTotalById(Long cartId, double total) {
+        try {
+            cartClient.updateCartTotalById(cartId, total);
+        } catch (FeignException e) {
+            log.error("Failed to update cart total for cart {}: {}", cartId, e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
         }
     }

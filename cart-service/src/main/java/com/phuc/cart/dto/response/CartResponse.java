@@ -14,6 +14,8 @@ public class CartResponse {
     private String email;
     private List<CartItemResponse> items;
     private BigDecimal totalAmount;
+    private String promoCode;
+    private BigDecimal discountAmount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

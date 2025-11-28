@@ -24,6 +24,8 @@ public class CartCreationRequest {
     @Valid
     List<CartItemCreationRequest> items;
 
+    String promoCode;
+
     public BigDecimal TotalAmount() {
         return null;
     }

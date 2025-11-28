@@ -27,8 +27,8 @@ public class PromotionController {
     }
 
     @PostMapping("/apply")
-    public ApiResponse<Void> applyPromotionCode(@RequestParam String promoCode) {
-        promotionService.applyPromotionCode(promoCode);
+    public ApiResponse<Void> applyPromotionCode(@RequestParam String promoCode, @RequestParam Long cartId) {
+        promotionService.applyPromotionCode(promoCode, cartId);
         return ApiResponse.<Void>builder()
                 .message("Promotion code applied successfully!")
                 .build();

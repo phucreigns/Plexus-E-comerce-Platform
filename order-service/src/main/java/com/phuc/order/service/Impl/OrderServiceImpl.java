@@ -4,12 +4,14 @@ import com.phuc.order.dto.request.OrderCreationRequest;
 import com.phuc.order.dto.request.OrderItemCreationRequest;
 import com.phuc.order.dto.response.OrderResponse;
 import com.phuc.order.entity.Order;
+import com.phuc.order.entity.OrderItem;
 import com.phuc.order.exception.AppException;
 import com.phuc.order.exception.ErrorCode;
 import com.phuc.order.httpclient.PaymentClient;
 import com.phuc.order.httpclient.dto.CreateCheckoutSessionRequest;
 import com.phuc.order.httpclient.ProductClient;
 import com.phuc.order.mapper.OrderMapper;
+import com.phuc.order.repository.OrderItemRepository;
 import com.phuc.order.repository.OrderRepository;
 import com.phuc.order.service.OrderService;
 import feign.FeignException;
@@ -33,6 +35,7 @@ public class OrderServiceImpl implements OrderService {
     ProductClient productClient;
     PaymentClient paymentClient;
     OrderRepository orderRepository;
+    OrderItemRepository orderItemRepository;
     OrderMapper orderMapper;
 
     @Override
@@ -42,17 +45,48 @@ public class OrderServiceImpl implements OrderService {
 
         validateStockAvailability(request.getItems());
 
-        double calculatedTotal = calculateOrderTotal(request.getItems());
+        // If total is provided (e.g., from cart with promotion discount), use it
+        // Otherwise, calculate from product prices
+        // Note: This endpoint is typically called from cart service, which provides validated total
+        double calculatedTotal = request.getTotal() != null 
+                ? request.getTotal() 
+                : calculateOrderTotal(request.getItems());
+        
+        if (request.getTotal() != null) {
+            log.info("Using provided total from request (likely from cart): {}", calculatedTotal);
+            // Validate that provided total is reasonable (not too different from calculated)
+            double calculatedFromPrices = calculateOrderTotal(request.getItems());
+            double difference = Math.abs(calculatedTotal - calculatedFromPrices);
+            double differencePercent = (difference / calculatedFromPrices) * 100;
+            
+            // Warn if difference is more than 50% (might indicate tampering)
+            if (differencePercent > 50) {
+                log.warn("Provided total {} differs significantly from calculated total {} ({}% difference). " +
+                        "This might indicate tampering, but proceeding as it may be from cart with promotion.", 
+                        calculatedTotal, calculatedFromPrices, differencePercent);
+            }
+        } else {
+            log.info("Calculated total from product prices: {}", calculatedTotal);
+        }
         
         Order order = orderMapper.toOrder(request);
         order.setTotal(calculatedTotal);
         order.setEmail(email);
         order.setStatus("PENDING");
-        orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
 
-        updateStockAndSoldQuantity(request.getItems());
+        // Save order items
+        List<OrderItem> orderItems = request.getItems().stream()
+                .map(item -> OrderItem.builder()
+                        .productId(item.getProductId())
+                        .variantId(item.getVariantId())
+                        .quantity(item.getQuantity())
+                        .orderId(savedOrder.getOrderId())
+                        .build())
+                .toList();
+        orderItemRepository.saveAll(orderItems);
 
-        log.info("Order created successfully for user: {}, orderId: {}, total: {}", email, order.getOrderId(), order.getTotal());
+        log.info("Order created successfully for user: {}, orderId: {}, total: {}", email, savedOrder.getOrderId(), savedOrder.getTotal());
 
         return orderMapper.toOrderResponse(order);
     }
@@ -69,30 +103,48 @@ public class OrderServiceImpl implements OrderService {
 
         validateStockAvailability(request.getItems());
 
+        // Buy Now always calculates total from product prices - ignore any provided total
+        // This prevents users from manually setting a lower price
         double calculatedTotal = calculateOrderTotal(request.getItems());
+        
+        if (request.getTotal() != null) {
+            log.warn("Buy Now: Ignoring provided total {} and using calculated total {} from product prices", 
+                    request.getTotal(), calculatedTotal);
+        }
+        
+        log.info("Buy Now: Calculated total from product prices: {}", calculatedTotal);
 
         Order order = orderMapper.toOrder(request);
         order.setTotal(calculatedTotal);
         order.setEmail(email);
         order.setStatus("PENDING");
-        orderRepository.save(order);
+        Order savedOrder = orderRepository.save(order);
 
-        updateStockAndSoldQuantity(request.getItems());
+        // Save order items
+        List<OrderItem> orderItems = request.getItems().stream()
+                .map(item -> OrderItem.builder()
+                        .productId(item.getProductId())
+                        .variantId(item.getVariantId())
+                        .quantity(item.getQuantity())
+                        .orderId(savedOrder.getOrderId())
+                        .build())
+                .toList();
+        orderItemRepository.saveAll(orderItems);
 
-        log.info("Buy Now order created successfully for user: {}, orderId: {}, total: {}", email, order.getOrderId(), order.getTotal());
+        log.info("Buy Now order created successfully for user: {}, orderId: {}, total: {}", email, savedOrder.getOrderId(), savedOrder.getTotal());
 
         try {
             var sessionReq = com.phuc.order.httpclient.dto.CreateCheckoutSessionRequest.builder()
-                    .amount(java.math.BigDecimal.valueOf(order.getTotal()))
-                    .productName("Order #" + order.getOrderId())
-                    .orderId(order.getOrderId())
+                    .amount(java.math.BigDecimal.valueOf(savedOrder.getTotal()))
+                    .productName("Order #" + savedOrder.getOrderId())
+                    .orderId(savedOrder.getOrderId())
                     .build();
             var sessionResp = paymentClient.createChargeSession(sessionReq);
-            var orderResp = orderMapper.toOrderResponse(order);
+            var orderResp = orderMapper.toOrderResponse(savedOrder);
             orderResp.setSessionUrl(sessionResp.getResult().getSessionUrl());
             return orderResp;
         } catch (FeignException e) {
-            log.error("Error creating checkout session for order {}: {}", order.getOrderId(), e.getMessage());
+            log.error("Error creating checkout session for order {}: {}", savedOrder.getOrderId(), e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
         }
     }
@@ -106,6 +158,29 @@ public class OrderServiceImpl implements OrderService {
         String oldStatus = order.getStatus();
         order.setStatus(newStatus);
         orderRepository.save(order);
+        
+        // Update stock when order is paid
+        if ("PAID".equals(newStatus) && !"PAID".equals(oldStatus)) {
+            log.info("Order {} is now PAID, updating stock and sold quantity", orderId);
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
+            if (orderItems != null && !orderItems.isEmpty()) {
+                orderItems.forEach(item -> {
+                    try {
+                        productClient.updateStockAndSoldQuantity(
+                                item.getProductId(), 
+                                item.getVariantId(), 
+                                item.getQuantity()
+                        );
+                        log.info("Stock updated for productId={}, variantId={}, quantity={}", 
+                                item.getProductId(), item.getVariantId(), item.getQuantity());
+                    } catch (FeignException e) {
+                        log.error("Error updating stock for productId={}, variantId={}: {}", 
+                                item.getProductId(), item.getVariantId(), e.getMessage());
+                        // Don't throw exception - order is already marked as PAID
+                    }
+                });
+            }
+        }
         
         log.info("✅ Order {} status updated from {} to {}", orderId, oldStatus, newStatus);
     }
@@ -201,10 +276,6 @@ public class OrderServiceImpl implements OrderService {
         return jwt.getClaim("email");
     }
 
-    private String getCurrentUsername() {
-        Jwt jwt = (Jwt) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return jwt.getClaim("preferred_username");
-    }
 
     private double calculateOrderTotal(List<OrderItemCreationRequest> items) {
         return items.stream().mapToDouble(item -> {
@@ -238,15 +309,5 @@ public class OrderServiceImpl implements OrderService {
         });
     }
 
-    private void updateStockAndSoldQuantity(List<OrderItemCreationRequest> items) {
-        items.forEach(item -> {
-            try {
-                productClient.updateStockAndSoldQuantity(item.getProductId(), item.getVariantId(), item.getQuantity());
-            } catch (FeignException e) {
-                log.error("Error updating stock for productId={}, variantId={}: {}", item.getProductId(), item.getVariantId(), e.getMessage());
-                throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
-            }
-        });
-    }
 
 }

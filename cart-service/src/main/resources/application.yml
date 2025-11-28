@@ -27,6 +27,9 @@ product:
 order:
   service:
     url: ${ORDER_SERVICE_URL}
+payment:
+  service:
+    url: ${PAYMENT_SERVICE_URL:http://localhost:8099/payment}
 promotion:
   service:
     url: ${PROMOTION_SERVICE_URL}

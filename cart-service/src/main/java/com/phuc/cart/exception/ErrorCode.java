@@ -51,6 +51,13 @@ public enum ErrorCode {
     ORDER_VALUE_TOO_LOW(2023, "The order value is too low. Please ensure the total meets the minimum requirement.", HttpStatus.BAD_REQUEST),
     QUANTITY_MUST_BE_AT_LEAST_1(2024, "Quantity must be at least 1.", HttpStatus.BAD_REQUEST),
     VARIANT_ID_IS_REQUIRED(2025, "Variant ID is required. Please provide a valid variant ID.", HttpStatus.BAD_REQUEST),
+    CART_IS_EMPTY(2026, "The cart is empty. Please add items to the cart before creating an order.", HttpStatus.BAD_REQUEST),
+    PROMOTION_NOT_FOUND(2027, "The promotion code could not be found. Please verify the promotion code.", HttpStatus.NOT_FOUND),
+    PROMOTION_EXPIRED(2028, "The promotion has expired. Please check the promotion dates and try again.", HttpStatus.BAD_REQUEST),
+    PROMOTION_USAGE_LIMIT_REACHED(2029, "The promotion usage limit has been reached. No more uses are allowed.", HttpStatus.BAD_REQUEST),
+    NO_ELIGIBLE_PRODUCTS(2030, "There are no eligible products for the promotion. Please verify the products in your cart.", HttpStatus.BAD_REQUEST),
+    PROMOTION_ORDER_VALUE_TOO_LOW(2031, "The order value is too low. Please ensure the order meets the minimum value required for the promotion.", HttpStatus.BAD_REQUEST),
+    PROMOTION_SERVICE_UNAVAILABLE(2032, "Promotion service is currently unavailable. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE),
     ;
 
     int code;

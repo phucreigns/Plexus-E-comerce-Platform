@@ -22,7 +22,7 @@ public class OrderController {
     OrderService orderService;
 
     // Tạo đơn hàng thông thường
-    @PostMapping
+    @PostMapping("/")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreationRequest request) {
         return ResponseEntity.ok(orderService.createOrder(request));
     }

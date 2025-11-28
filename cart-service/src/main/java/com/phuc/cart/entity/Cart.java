@@ -31,6 +31,13 @@ public class Cart {
 
     BigDecimal totalAmount;
 
+    @Column(name = "promo_code", length = 50)
+    String promoCode;
+
+    @Column(name = "discount_amount", precision = 10, scale = 2)
+    @Builder.Default
+    BigDecimal discountAmount = BigDecimal.ZERO;
+
     @CreationTimestamp
     LocalDateTime createdAt;
 

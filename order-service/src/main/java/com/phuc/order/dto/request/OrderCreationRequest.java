@@ -19,4 +19,8 @@ public class OrderCreationRequest {
     String shippingAddress;
     
     String notes;
+    
+    // Optional: If provided, use this total instead of calculating from product prices
+    // This allows cart service to pass the total with promotion discount applied
+    Double total;
 }
