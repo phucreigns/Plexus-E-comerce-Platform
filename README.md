@@ -1,4 +1,4 @@
-<img width="1458" height="939" alt="Screenshot 2025-11-30 at 23 16 48" src="https://github.com/user-attachments/assets/7f3482aa-9b2b-46ce-be9c-a4b80f92c5fd" /># Plexus-E-comerce-Platform
+# Plexus-E-comerce-Platform
 
 🖥️ The E-Commerce Backend system offers APIs covering product management, carts, orders, users, payments, and file uploads. It is built with a focus on scalability, JWT security, caching, and asynchronous processing for intensive tasks.
 
@@ -15,7 +15,7 @@
 - Technology Heterogeneity: Different services can be written in different use different storage technologies, choosing the best tool for the job.
 - Inter-Service Communication: Services communicate with each other, usually through lightweight mechanisms like HTTP/REST APIs.
 - Resilience: If one service fails, the others can continue to function, making the overall system more fault-tolerant.
-<img width="1000" height="453" alt="image" src="https://github.com/user-attachments/assets/15f5fb62-5918-4894-aae7-1b26fbb6249b" />
+<img width="1140" height="720" alt="image" src="https://github.com/user-attachments/assets/9d5180e2-d7bb-4d8b-9af7-c1f6f0635a56" />
 
 
 
@@ -46,7 +46,7 @@ Demo: SwaggerUI
 
 <br>
 
-** Databases Management **
+**Databases Management**
 
 - **PostgresSQL**:
 <br>PostgreSQL is a powerful, open-source Object-Relational Database known for its robustness, reliability (ACID compliant), and advanced features. It supports complex queries and a wide variety of data types, including native JSON/JSONB, making it a highly extensible and stable choice for critical enterprise applications.
@@ -70,7 +70,7 @@ Demo: SwaggerUI
 
 <br>
 
-** Payment Management ** 
+**Payment Management** 
 - **Stripe**:
 <br>Stripe is a technology company that provides a suite of APIs and tools for businesses to easily accept and manage online payments and financial transactions. It handles everything from processing credit cards and mobile payments to subscription billing, invoicing, and fraud prevention and powerful infrastructure that simplifies the complex process of running an internet business's financial operations.
 
@@ -79,9 +79,9 @@ Demo: SwaggerUI
 
 
 
-
 **Payment History**
 <img width="1468" height="790" alt="Screenshot 2025-11-30 at 23 19 16" src="https://github.com/user-attachments/assets/57210613-4c0e-4d71-aaa7-d79aa6ed5c9a" />
+
 
 
 
