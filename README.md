@@ -1,7 +1,22 @@
-
-
-E-commerce
-
+The E-Commerce Backend system offers APIs covering product management, carts, orders, users, payments, and file uploads. It is built with a focus on scalability, JWT security, caching, and asynchronous processing for intensive tasks.
 
 
 <img width="1079" height="673" alt="image" src="https://github.com/user-attachments/assets/2fa91482-7a44-4a27-9c97-4799e0cbcca4" />
+
+
+# Architecture Overview
+
+✨ Đặc điểm Chính của Microservices Architecture.
+- Service Granularity: Services are small and perform a single function.
+- Decentralized Data Management: Each service typically manages its own database to ensure independence. This is often referred to as "Database per Service."
+- Independent Deployment: Services can be developed, deployed, and updated independently without affecting the rest of the application.
+- Technology Heterogeneity: Different services can be written in different use different storage technologies, choosing the best tool for the job.
+- Inter-Service Communication: Services communicate with each other, usually through lightweight mechanisms like HTTP/REST APIs.
+- Resilience: If one service fails, the others can continue to function, making the overall system more fault-tolerant.
+
+https://media.geeksforgeeks.org/wp-content/cdn-uploads/20210916202745/Microservice-Architecture-Introduction-Challeneges-Best-Practices.png
+
+https://www.geeksforgeeks.org/blogs/microservice-architecture-introduction-challenges-best-practices/
+
+
+
