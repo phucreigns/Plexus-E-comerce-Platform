@@ -1,4 +1,5 @@
-<img width="1470" height="789" alt="Screenshot 2025-11-30 at 21 49 35" src="https://github.com/user-attachments/assets/c2536edb-dcf0-4a57-a854-c2359cc8cebf" />🖥️ The E-Commerce Backend system offers APIs covering product management, carts, orders, users, payments, and file uploads. It is built with a focus on scalability, JWT security, caching, and asynchronous processing for intensive tasks.
+*Plexus-E-comerce-Platform*
+🖥️ The E-Commerce Backend system offers APIs covering product management, carts, orders, users, payments, and file uploads. It is built with a focus on scalability, JWT security, caching, and asynchronous processing for intensive tasks.
 
 
 <img width="1190" height="650" alt="image" src="https://github.com/user-attachments/assets/344d6d7a-dd74-46be-a9a2-df77fe78b154" />
