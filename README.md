@@ -37,8 +37,10 @@ Demo: Login (Email & Password)
 
 **Databases Management**
 
-- PostgresSQL:<br>
+- PostgresSQL:
+<br>
 PostgreSQL is a powerful, open-source Object-Relational Database known for its robustness, reliability (ACID compliant), and advanced features. It supports complex queries and a wide variety of data types, including native JSON/JSONB, making it a highly extensible and stable choice for critical enterprise applications.
+
 
 
 
