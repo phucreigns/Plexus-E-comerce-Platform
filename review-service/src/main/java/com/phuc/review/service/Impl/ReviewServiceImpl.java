@@ -1,7 +1,5 @@
 package com.phuc.review.service.Impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phuc.review.dto.ApiResponse;
 import com.phuc.review.dto.request.ReviewCreationRequest;
 import com.phuc.review.dto.request.ReviewUpdateRequest;
@@ -271,7 +269,26 @@ public class ReviewServiceImpl implements ReviewService {
                 log.error("Product not found (404): {}", e.getMessage());
                 throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
             } else {
-                log.error("Error checking product existence: {}", e.getMessage());
+                String errorMessage = e.getMessage();
+                if (errorMessage != null && (errorMessage.contains("Connection refused") || 
+                                             errorMessage.contains("connect timed out") ||
+                                             errorMessage.contains("I/O error"))) {
+                    log.error("Product Service is unavailable (connection error): {}", errorMessage);
+                    throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+                } else {
+                    log.error("Error checking product existence: {}", errorMessage);
+                    throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+                }
+            }
+        } catch (Exception e) {
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && (errorMessage.contains("Connection refused") || 
+                                         errorMessage.contains("connect timed out") ||
+                                         errorMessage.contains("I/O error"))) {
+                log.error("Product Service is unavailable (connection error): {}", errorMessage);
+                throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+            } else {
+                log.error("Unexpected error checking product existence: {}", errorMessage, e);
                 throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
             }
         }
@@ -279,9 +296,12 @@ public class ReviewServiceImpl implements ReviewService {
 
     private void validateUserPurchasedProduct(String email, String productId, String variantId) {
         try {
-            var ordersResponse = orderClient.getMyOrders();
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<OrderResponse> orders = objectMapper.convertValue(ordersResponse.getResult(), new TypeReference<>() {});
+            List<OrderResponse> orders = orderClient.getMyOrders();
+
+            if (orders == null || orders.isEmpty()) {
+                log.error("User {} has no orders", email);
+                throw new AppException(ErrorCode.USER_NOT_PURCHASED_PRODUCT);
+            }
 
             boolean hasPurchased = orders.stream()
                     .flatMap(order -> order.getItems().stream())
@@ -297,7 +317,28 @@ public class ReviewServiceImpl implements ReviewService {
                 log.error("Orders not found for user (404): {}", e.getMessage());
                 throw new AppException(ErrorCode.USER_NOT_PURCHASED_PRODUCT);
             } else {
-                log.error("Error fetching user orders: {}", e.getMessage());
+                String errorMessage = e.getMessage();
+                if (errorMessage != null && (errorMessage.contains("Connection refused") || 
+                                             errorMessage.contains("connect timed out") ||
+                                             errorMessage.contains("I/O error") ||
+                                             errorMessage.contains("extracting response"))) {
+                    log.error("Order Service is unavailable (connection/parsing error): {}", errorMessage);
+                    throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+                } else {
+                    log.error("Error fetching user orders: {}", errorMessage);
+                    throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+                }
+            }
+        } catch (Exception e) {
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && (errorMessage.contains("Connection refused") || 
+                                         errorMessage.contains("connect timed out") ||
+                                         errorMessage.contains("I/O error") ||
+                                         errorMessage.contains("extracting response"))) {
+                log.error("Order Service is unavailable (connection/parsing error): {}", errorMessage);
+                throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
+            } else {
+                log.error("Unexpected error fetching user orders: {}", errorMessage, e);
                 throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
             }
         }

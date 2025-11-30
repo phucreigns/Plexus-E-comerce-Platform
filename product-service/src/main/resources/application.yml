@@ -26,7 +26,7 @@ spring:
       cache-null-values: false
   servlet:
     multipart:
-      max-file-size: ${MAX_FILE_SIZE:50MB}
+      max-file-size: ${MAX_FILE_SIZE:10MB}
       max-request-size: ${MAX_REQUEST_SIZE:200MB}
       enabled: true
 
@@ -36,7 +36,6 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: https://${AUTH0_DOMAIN}
-
 
 
 shop:

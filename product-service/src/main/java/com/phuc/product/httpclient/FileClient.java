@@ -11,10 +11,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@FeignClient(name = "file-service", url = "${file.service.url}", configuration = {AuthenticationRequestInterceptor.class})
+@FeignClient(name = "file-service", url = "${file.service.url}", configuration = AuthenticationRequestInterceptor.class)
 public interface FileClient {
 
-    @PostMapping(value = "/upload-multiple", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(
+        value = "/upload-multiple",
+        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+       produces = "application/json"
+    )
     ApiResponse<List<FileResponse>> uploadMultipleFiles(@RequestPart("files") List<MultipartFile> files);
-
 }

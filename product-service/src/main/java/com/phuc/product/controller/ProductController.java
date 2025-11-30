@@ -18,6 +18,7 @@ import org.springframework.http.MediaType;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import java.util.Map;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -30,11 +31,25 @@ public class ProductController {
     public ApiResponse<ProductResponse> createProduct(
             @RequestPart("request") @Valid ProductCreationRequest request,
             @RequestPart(value = "productImages", required = false) List<MultipartFile> productImages) {
-        log.info("Received product creation request: {}", request);
+        log.info("Received product creation request: shopId={}, name={}, categoryId={}", 
+                request.getShopId(), request.getName(), request.getCategoryId());
+        log.info("Received {} product images", productImages != null ? productImages.size() : 0);
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.createProduct(request, productImages))
                 .build();
     }
+
+    @PostMapping(value = "/create-json", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ApiResponse<ProductResponse> createProductJson(
+            @RequestBody @Valid ProductCreationRequest request) {
+        log.info("Received product creation request (JSON): shopId={}, name={}, categoryId={}", 
+                request.getShopId(), request.getName(), request.getCategoryId());
+        return ApiResponse.<ProductResponse>builder()
+                .result(productService.createProduct(request, null))
+                .message("Product created successfully")
+                .build();
+    }
+    
 
 
     @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

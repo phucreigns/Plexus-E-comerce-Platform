@@ -24,6 +24,7 @@ public enum ErrorCode {
     FOREIGN_KEY_VIOLATION(1009, "FOREIGN_KEY_VIOLATION", HttpStatus.BAD_REQUEST),
     FILE_SIZE_EXCEEDED(1010, "File size exceeds the maximum allowed limit", HttpStatus.BAD_REQUEST),
     MISSING_REQUIRED_PARAMETER(1011, "MISSING_REQUIRED_PARAMETER", HttpStatus.BAD_REQUEST),
+    FILE_UPLOAD_FAILED(1012, "Failed to upload file. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE),
     ;
 
     int code;

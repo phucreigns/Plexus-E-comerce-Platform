@@ -66,9 +66,6 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse createProduct(ProductCreationRequest request, List<MultipartFile> productImages) {
         Objects.requireNonNull(request, "request must not be null");
-        if (productImages == null || productImages.isEmpty()) {
-            throw new AppException(ErrorCode.IMAGE_REQUIRED);
-        }
 
         String email = getCurrentEmail();
         ShopResponse shopResponse = getShopByOwnerEmail(email);
@@ -78,7 +75,14 @@ public class ProductServiceImpl implements ProductService {
         Product product = productMapper.toProduct(request);
         product.setShopId(shopResponse.getId());
         product.setCategoryId(category.getId());
+        
+        // Upload images if provided, otherwise set empty list
+        if (productImages != null && !productImages.isEmpty()) {
         product.setImageUrls(handleImageUpload(productImages));
+        } else {
+            product.setImageUrls(List.of());
+        }
+        
         product.setVariants(
                 request.getVariants().stream()
                         .map(productVariantMapper::toProductVariant)
@@ -391,6 +395,9 @@ public class ProductServiceImpl implements ProductService {
             ApiResponse<ShopResponse> response = shopClient.getShopByOwnerEmail(email);
             return Optional.ofNullable(response.getResult())
                     .orElseThrow(() -> new AppException(ErrorCode.SHOP_NOT_FOUND));
+        } catch (FeignException.NotFound ex) {
+            log.warn("Shop not found for email {}: {}", email, ex.getMessage());
+            throw new AppException(ErrorCode.SHOP_NOT_FOUND);
         } catch (FeignException ex) {
             log.error("Error calling shop service for email {}: {}", email, ex.getMessage(), ex);
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);

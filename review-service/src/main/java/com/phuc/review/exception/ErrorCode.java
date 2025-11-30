@@ -23,6 +23,7 @@ public enum ErrorCode {
     FILE_SIZE_EXCEEDED(1008, "The file size exceeds the allowed limit. Please upload a smaller file.", HttpStatus.BAD_REQUEST),
     MISSING_REQUIRED_PARAMETER(1009, "A required parameter is missing. Please ensure all required fields are provided.", HttpStatus.BAD_REQUEST),
     SERVICE_UNAVAILABLE(1010, "The service is currently unavailable. Please try again later.", HttpStatus.SERVICE_UNAVAILABLE),
+    INVALID_REQUEST_FORMAT(1011, "Invalid JSON format. Please check your request body.", HttpStatus.BAD_REQUEST),
 
     PRODUCT_NOT_FOUND(2001, "The product was not found. Please check the product ID and try again.", HttpStatus.NOT_FOUND),
     USER_NOT_PURCHASED_PRODUCT(2002, "You cannot review a product you have not purchased.", HttpStatus.FORBIDDEN),

@@ -19,7 +19,7 @@ public class ProductResponse {
     String description;
     List<ProductVariantResponse> variants;
     String categoryId;
-    // List<String> imageUrls;
+    List<String> imageUrls;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 

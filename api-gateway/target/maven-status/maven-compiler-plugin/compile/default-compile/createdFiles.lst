@@ -1,0 +1,3 @@
+com/phuc/gateway/config/CorsConfig.class
+com/phuc/gateway/config/SecurityConfig.class
+com/phuc/gateway/ApiGatewayApplication.class

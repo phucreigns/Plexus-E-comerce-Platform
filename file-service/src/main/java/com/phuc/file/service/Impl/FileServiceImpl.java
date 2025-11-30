@@ -47,43 +47,63 @@ public class FileServiceImpl implements FileService {
 
       @Override
       public FileResponse uploadFile(MultipartFile file) throws IOException {
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            if (file == null || file.isEmpty()) {
+                  throw new AppException(ErrorCode.MISSING_REQUIRED_PARAMETER);
+            }
+
+            String fileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + file.getOriginalFilename();
 
             uploadToS3(file, fileName);
 
             String fileUrl = generateFileUrl(fileName);
             File fileEntity = saveFileMetadata(file, fileName, fileUrl);
 
-
-            fileEntity.setUrl(fileUrl);
-            fileRepository.save(fileEntity);
-
             return fileMapper.toFileResponse(fileEntity);
       }
 
       @Override
       public List<FileResponse> uploadMultipleFiles(List<MultipartFile> files) {
+            if (files == null || files.isEmpty()) {
+                  throw new AppException(ErrorCode.MISSING_REQUIRED_PARAMETER);
+            }
+
             List<FileResponse> responses = new ArrayList<>();
+            List<String> failedFiles = new ArrayList<>();
 
             files.parallelStream().forEach(file -> {    
+                  if (file == null || file.isEmpty()) {
+                        synchronized (failedFiles) {
+                              failedFiles.add(file != null ? file.getOriginalFilename() : "null");
+                        }
+                        return;
+                  }
+
                   try {
-                        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                        String fileName = System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8) + "_" + file.getOriginalFilename();
 
                         uploadToS3(file, fileName);
 
                         String fileUrl = generateFileUrl(fileName);
                         File fileEntity = saveFileMetadata(file, fileName, fileUrl);
 
-                        fileEntity.setUrl(fileUrl);
-                        fileRepository.save(fileEntity);
-
                         synchronized (responses) {
                               responses.add(fileMapper.toFileResponse(fileEntity));
                         }
                   } catch (IOException e) {
                         log.error("Failed to upload file: {}", file.getOriginalFilename(), e);
+                        synchronized (failedFiles) {
+                              failedFiles.add(file.getOriginalFilename());
+                        }
                   }
             });
+
+            if (!failedFiles.isEmpty()) {
+                  log.warn("Some files failed to upload: {}", failedFiles);
+            }
+
+            if (responses.isEmpty() && !failedFiles.isEmpty()) {
+                  throw new AppException(ErrorCode.FILE_UPLOAD_FAILED);
+            }
 
             return responses;
       }
