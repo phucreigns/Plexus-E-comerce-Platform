@@ -1,7 +1,7 @@
-The E-Commerce Backend system offers APIs covering product management, carts, orders, users, payments, and file uploads. It is built with a focus on scalability, JWT security, caching, and asynchronous processing for intensive tasks.
+🖥️ The E-Commerce Backend system offers APIs covering product management, carts, orders, users, payments, and file uploads. It is built with a focus on scalability, JWT security, caching, and asynchronous processing for intensive tasks.
 
 
-<img width="1079" height="673" alt="image" src="https://github.com/user-attachments/assets/2fa91482-7a44-4a27-9c97-4799e0cbcca4" />
+<img width="1190" height="650" alt="image" src="https://github.com/user-attachments/assets/344d6d7a-dd74-46be-a9a2-df77fe78b154" />
 
 
 # Architecture Overview
@@ -14,6 +14,7 @@ The E-Commerce Backend system offers APIs covering product management, carts, or
 - Inter-Service Communication: Services communicate with each other, usually through lightweight mechanisms like HTTP/REST APIs.
 - Resilience: If one service fails, the others can continue to function, making the overall system more fault-tolerant.
 <img width="1000" height="453" alt="image" src="https://github.com/user-attachments/assets/15f5fb62-5918-4894-aae7-1b26fbb6249b" />
+
 
 
 
