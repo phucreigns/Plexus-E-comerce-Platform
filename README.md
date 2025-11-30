@@ -94,9 +94,16 @@
 - **AWS S3**:
 <br>AWS S3 (Amazon Simple Storage Service) is an object storage service offering industry-leading scalability, data availability, security, and performance. It allows users to store and retrieve any amount of data—photos, videos, application data, backups—from anywhere on the web.
 
-<br><img width="1464" height="918" alt="Screenshot 2025-12-01 at 01 59 13" src="https://github.com/user-attachments/assets/9ad83ce2-c2fc-49d5-a4aa-aed73bbea436" />
+<img width="1464" height="918" alt="Screenshot 2025-12-01 at 01 59 13" src="https://github.com/user-attachments/assets/9ad83ce2-c2fc-49d5-a4aa-aed73bbea436" />
 
+<br>
+<br>
 
+**Containerization** 
+- **Docker**:
+<br>Docker is an open-source platform that enables developers to easily build, package, and deploy applications inside lightweight, portable units called containers. These containers include everything an application needs to run—code, runtime, libraries, and settings—ensuring the application works reliably regardless of the environment.
+
+<img width="1464" height="951" alt="Screenshot 2025-12-01 at 02 10 11" src="https://github.com/user-attachments/assets/0df28de9-e3aa-4efd-8752-272f62486474" />
 
 
 
