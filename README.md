@@ -47,8 +47,8 @@ Demo: Login (Email & Password)
 - **MongoDB**:
 <br>MongoDB is a leading NoSQL document database designed for modern application development. Unlike traditional relational databases, it stores data in flexible, JSON-like documents (BSON), allowing for dynamic and unstructured schemas. MongoDB is highly favored for its horizontal scalability through sharding, high availability via replica sets, and ability to handle large volumes of diverse data.
 <img width="1468" height="949" alt="Screenshot 2025-11-30 at 23 02 00" src="https://github.com/user-attachments/assets/87e86bb0-fd6a-4c97-936b-b8b420fb2472" />
-<br>
 
+<br>
 
 - **Redis**:
 <br>Redis is an open-source, in-memory data structure store primarily used as a cache, message broker, and highly performant database. It stores data directly in the system's RAM, providing sub-millisecond latency for read and write operations and supports various data structures, such as strings, lists, sets, hashes, and sorted sets, making it exceptionally versatile for tasks like session management.
@@ -59,6 +59,7 @@ Demo: Login (Email & Password)
 
 
 
+Payment Management
 
 
 
