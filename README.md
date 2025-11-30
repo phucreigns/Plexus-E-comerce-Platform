@@ -35,18 +35,21 @@ Demo: Login (Email & Password)
 <img width="1203" height="738" alt="Screenshot 2025-11-30 at 21 51 43" src="https://github.com/user-attachments/assets/64fb44e3-03ad-45b6-8423-2e23c57c7b79" />
 
 
-
+<br>
 **Databases Management**
 
-- PostgresSQL:
+- **PostgresSQL**:
 <br>PostgreSQL is a powerful, open-source Object-Relational Database known for its robustness, reliability (ACID compliant), and advanced features. It supports complex queries and a wide variety of data types, including native JSON/JSONB, making it a highly extensible and stable choice for critical enterprise applications.
 
 
+<br>
+- **MongoDB**:
+<br>MongoDB is a leading NoSQL document database designed for modern application development. Unlike traditional relational databases, it stores data in flexible, JSON-like documents (BSON), allowing for dynamic and unstructured schemas. MongoDB is highly favored for its horizontal scalability through sharding, high availability via replica sets, and ability to handle large volumes of diverse data.
 
 
-
-
-
+<br>
+- **MongoDB**:
+<br>Redis is an open-source, in-memory data structure store primarily used as a cache, message broker, and highly performant database. It stores data directly in the system's RAM, providing sub-millisecond latency for read and write operations and supports various data structures, such as strings, lists, sets, hashes, and sorted sets, making it exceptionally versatile for tasks like session management.
 
 
 
