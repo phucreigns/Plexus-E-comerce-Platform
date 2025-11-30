@@ -18,7 +18,7 @@
 <img width="1140" height="720" alt="image" src="https://github.com/user-attachments/assets/9d5180e2-d7bb-4d8b-9af7-c1f6f0635a56" />
 
 <br>
-
+<br>
 **Demo: Registration**
 <img width="1470" height="822" alt="Screenshot 2025-11-30 at 21 48 14" src="https://github.com/user-attachments/assets/5738d3d4-1751-497c-be6b-5d455677406d" />
 
@@ -81,6 +81,7 @@
 
 **Payment History**
 <img width="1468" height="790" alt="Screenshot 2025-11-30 at 23 19 16" src="https://github.com/user-attachments/assets/57210613-4c0e-4d71-aaa7-d79aa6ed5c9a" />
+
 
 
 
