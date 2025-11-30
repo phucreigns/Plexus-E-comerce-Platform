@@ -25,10 +25,16 @@
 
 <img width="1470" height="814" alt="Screenshot 2025-11-30 at 21 48 51" src="https://github.com/user-attachments/assets/b4c44dce-b71a-4810-86e9-8f9d54906b3e" />
 
-<img width="1470" height="789" alt="Screenshot 2025-11-30 at 21 49 35" src="https://github.com/user-attachments/assets/d2bbeb88-dbca-4c0c-98f3-50621f65ca54" />
+<br>
+<br>
 
 **Demo: Email Authentication**
+<img width="1470" height="789" alt="Screenshot 2025-11-30 at 21 49 35" src="https://github.com/user-attachments/assets/d2bbeb88-dbca-4c0c-98f3-50621f65ca54" />
+
 <img width="1470" height="816" alt="Screenshot 2025-11-30 at 21 50 21" src="https://github.com/user-attachments/assets/2ed672dd-c339-4901-921f-50b44fbd76aa" />
+
+<br>
+<br>
 
 **Demo: Login (Email & Password)**
 <img width="1470" height="781" alt="Screenshot 2025-11-30 at 22 04 25" src="https://github.com/user-attachments/assets/674c592d-15d0-46b2-9806-91a6a9a9cb37" />
@@ -82,6 +88,7 @@
 
 **Payment History**
 <img width="1468" height="790" alt="Screenshot 2025-11-30 at 23 19 16" src="https://github.com/user-attachments/assets/57210613-4c0e-4d71-aaa7-d79aa6ed5c9a" />
+
 
 
 
