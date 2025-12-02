@@ -1,0 +1,50 @@
+server:
+  port: ${NOTIFICATION_SERVICE_PORT:8093}
+  servlet:
+    context-path: /notification
+
+spring:
+  application:
+    name: notification-service
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${NOTIFICATION_SERVICE_DB:NotificationService}?authSource=admin
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+  thymeleaf:
+    cache: false
+    prefix: classpath:/templates/email/
+    suffix: .html
+
+  # JavaMail Configuration
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: ${MAIL_HOST:smtp.gmail.com}
+        debug: false
+    default-encoding: UTF-8
+
+logging:
+  level:
+    "[org.springframework.mail]": DEBUG
+    "[com.sun.mail]": DEBUG
+
+notification:
+  email:
+    from-name: ${EMAIL_FROM_NAME:Notification Service}

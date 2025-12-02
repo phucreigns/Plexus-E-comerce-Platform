@@ -1,4 +1,5 @@
 /Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/ApiGatewayApplication.java
-/Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/config/CorsConfig.java
-/Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/config/SecurityConfig.java
-/Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/filter/JwtAuthenticationFilter.java
+/Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/configuration/AuthenticationFilter.java
+/Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/configuration/CorsConfig.java
+/Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/configuration/JwtDecoderConfig.java
+/Users/xuanphuc/Documents/Project/project-5m/ECM/E-com-main/api-gateway/src/main/java/com/phuc/gateway/configuration/ObservationConfig.java

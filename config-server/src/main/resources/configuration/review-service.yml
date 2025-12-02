@@ -1,0 +1,39 @@
+server:
+  port: ${REVIEW_SERVICE_PORT:8097}
+  servlet:
+    context-path: /review
+
+spring:
+  application:
+    name: review-service
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${REVIEW_SERVICE_DB:ReviewService}?authSource=admin
+
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:50MB}
+      max-request-size: ${MAX_REQUEST_SIZE:200MB}
+      enabled: true
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+
+order:
+  service:
+    url: ${ORDER_SERVICE_URL}
+
+product:
+  service:
+    url: ${PRODUCT_SERVICE_URL}
+    
+shop:
+  service:
+    url: ${SHOP_SERVICE_URL}
+
+file:
+  service:
+    url: ${FILE_SERVICE_URL}

@@ -1,40 +1,5 @@
-server:
-  port: ${CART_SERVICE_PORT:8095}
-  servlet:
-    context-path: /cart
-
 spring:
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:9999}
   application:
     name: cart-service
-  datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${CART_SERVICE_DB:CartService}
-    driver-class-name: org.postgresql.Driver
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: update
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://${AUTH0_DOMAIN}
-
-
-product:
-  service:
-    url: ${PRODUCT_SERVICE_URL}
-order:
-  service:
-    url: ${ORDER_SERVICE_URL}
-payment:
-  service:
-    url: ${PAYMENT_SERVICE_URL:http://localhost:8099/payment}
-promotion:
-  service:
-    url: ${PROMOTION_SERVICE_URL}
-shop:
-  service:
-    url: ${SHOP_SERVICE_URL}
-
-

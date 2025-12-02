@@ -1,0 +1,30 @@
+server:
+  port: ${ORDER_SERVICE_PORT:8096}
+  servlet:
+    context-path: /order
+
+spring:
+  application:
+    name: order-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${ORDER_SERVICE_DB:OrderService}
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+
+product:
+  service:
+    url: ${PRODUCT_SERVICE_URL}
+
+payment:
+  service:
+    url: ${PAYMENT_SERVICE_URL:http://localhost:8099/payment}

@@ -7,8 +7,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=
-      - POSTGRES_PASSWORD=
+      - POSTGRES_USER=e-comerce
+      - POSTGRES_PASSWORD=123456
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -25,8 +25,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=
-      - MONGO_INITDB_ROOT_PASSWORD=
+      - MONGO_INITDB_ROOT_USERNAME=mongodb
+      - MONGO_INITDB_ROOT_PASSWORD=123456
     volumes:
       - mongodb-data:/data/db
     networks:
@@ -38,11 +38,11 @@ services:
     ports:
       - "6379:6379"
     environment:
-      - REDIS_PASSWORD=
+      - REDIS_PASSWORD=123456
     command:
       [
         "redis-server",
-        "--requirepass", "",
+        "--requirepass", "123456",
         "--appendonly", "yes",
         "--appendfsync", "always",
         "--save", "900", "1",
@@ -51,6 +51,31 @@ services:
       ]
     volumes:
       - redis-data:/data
+    networks:
+      - phuc-network
+
+
+  kafka:
+    image: confluentinc/cp-kafka:latest-ubi9
+    container_name: kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     networks:
       - phuc-network
 

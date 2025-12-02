@@ -1,0 +1,21 @@
+server:
+  port: ${SHOP_SERVICE_PORT:8092}
+  servlet:
+    context-path: /shop
+
+spring:
+  application:
+    name: shop-service
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME:mongodb}:${MONGO_PASSWORD:123456}@${MONGO_HOST:localhost}:${MONGO_PORT:27017}/${SHOP_SERVICE_DB:ShopService}?authSource=admin
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+
+product:
+  service:
+    url: ${PRODUCT_SERVICE_URL}

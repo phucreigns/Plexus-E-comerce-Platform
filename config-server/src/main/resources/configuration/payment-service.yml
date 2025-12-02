@@ -1,0 +1,50 @@
+server:
+  port: 8099
+  servlet:
+    context-path: /payment
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${PAYMENT_SERVICE_DB:PaymentService}  
+    driver-class-name: org.postgresql.Driver
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://${AUTH0_DOMAIN}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+stripe:
+  api:
+    key: ${STRIPE_API_KEY}
+  webhook:
+    secret: ${STRIPE_WEBHOOK_SECRET:whsec_5f898ce809e2c02902030d690fada526d02a72d27350dff11b40185850c9bf8a}
+
+order:
+  service:
+    url: ${ORDER_SERVICE_URL:http://localhost:8096/order}
+
+app:
+  vip:
+    price-ids:
+      monthly: ${APP_VIP_PRICE_MONTHLY:}
+      semiannual: ${APP_VIP_PRICE_SEMIANNUAL:}
+      annual: ${APP_VIP_PRICE_ANNUAL:}
+
+logging:
+  level:
+    root: INFO
+    com.netflix.discovery: OFF

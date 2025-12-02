@@ -1,37 +1,5 @@
-server:
-  port: ${AUTH_SERVICE_PORT:8090}
-  servlet:
-    context-path: /auth
-
 spring:
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:9999}
   application:
     name: auth-service
-  datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${AUTH_SERVICE_DB:AuthService}
-    driver-class-name: org.postgresql.Driver
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
-  jpa:
-    hibernate:
-      ddl-auto: update
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: https://${AUTH0_DOMAIN}
-          jwk-set-uri: https://${AUTH0_DOMAIN}/.well-known/jwks.json
-
-auth0:
-  domain: ${AUTH0_DOMAIN}
-  audience: ${AUTH0_AUDIENCE}
-  client-id: ${AUTH0_CLIENT_ID}
-  client-secret: ${AUTH0_CLIENT_SECRET}
-  redirect-uri: ${AUTH0_REDIRECT_URI}
-  issuer-uri: ${AUTH0_ISSUER_URI}
-
-app:
-  redirect-url: ${REDIRECT_URL}
-
-cart:
-  service:
-    url: ${CART_SERVICE_URL}

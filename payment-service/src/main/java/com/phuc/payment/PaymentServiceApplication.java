@@ -20,12 +20,17 @@ public class PaymentServiceApplication {
 	}
 
 	private static void setSpringProperties(Dotenv dotenv) {
-		System.setProperty("POSTGRES_HOST", dotenv.get("POSTGRES_HOST", ""));
+		System.setProperty("POSTGRES_HOST", dotenv.get("POSTGRES_HOST", "localhost"));
+		System.setProperty("POSTGRES_PORT", dotenv.get("POSTGRES_PORT", "5432"));
 		System.setProperty("POSTGRES_USERNAME", dotenv.get("POSTGRES_USERNAME", ""));
 		System.setProperty("POSTGRES_PASSWORD", dotenv.get("POSTGRES_PASSWORD", ""));
+		String paymentDb = dotenv.get("PAYMENTSERVICE_SERVICE_DB", "");
+		if (paymentDb.isBlank()) {
+			paymentDb = dotenv.get("PAYMENT_SERVICE_DB", "PaymentService");
+		}
+		System.setProperty("PAYMENT_SERVICE_DB", paymentDb);
 		
 		System.setProperty("AUTH0_DOMAIN", dotenv.get("AUTH0_DOMAIN", ""));
-
 
 		System.setProperty("STRIPE_API_KEY", dotenv.get("STRIPE_API_KEY", ""));
 		String webhookSecret = dotenv.get("STRIPE_WEBHOOK_SECRET", "");

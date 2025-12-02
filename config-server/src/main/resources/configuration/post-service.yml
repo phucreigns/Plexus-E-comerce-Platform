@@ -1,0 +1,88 @@
+server:
+  port: 8085
+  servlet:
+    context-path: /post
+
+auth0:
+  jwks-uri: ${AUTH0_JWKS_URI:https://dev-xxxxx.us.auth0.com/.well-known/jwks.json}
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 5MB
+  data:
+    mongodb:
+      uri: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST:localhost}:27017/post-service?authSource=admin
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    root: INFO
+    com.netflix.discovery: OFF
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+    instances:
+      uploadMultipleFiles:
+        baseConfig: default
+      checkIfUserIsVIP:
+        baseConfig: default
+
+  retry:
+    configs:
+      default:
+        maxRetryAttempts: 3
+        waitDuration: 2s
+    instances:
+      uploadMultipleFiles:
+        baseConfig: default
+      checkIfUserIsVIP:
+        baseConfig: default
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info, prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+  observations:
+    key-values:
+      application: post-service
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+  tracing:
+    exporter:
+      zipkin:
+        url: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
+    sampling:
+      probability: 1.0

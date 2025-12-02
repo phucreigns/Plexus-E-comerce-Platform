@@ -29,5 +29,6 @@ public class NotificationServiceApplication {
 		System.setProperty("MAIL_PORT", dotenv.get("MAIL_PORT", "587"));
 		System.setProperty("MAIL_USERNAME", dotenv.get("MAIL_USERNAME", ""));
 		System.setProperty("MAIL_PASSWORD", dotenv.get("MAIL_PASSWORD", ""));
+		System.setProperty("EMAIL_FROM_NAME", dotenv.get("EMAIL_FROM_NAME", "Notification Service"));
 	}
 }

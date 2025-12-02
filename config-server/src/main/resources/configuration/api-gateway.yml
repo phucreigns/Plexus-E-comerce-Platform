@@ -1,0 +1,333 @@
+server:
+  port: 8888
+  compression:
+    enabled: true
+    min-response-size: 1024
+    mime-types:
+      - text/html
+      - text/xml
+      - text/plain
+      - text/css
+      - text/javascript
+      - application/javascript
+      - application/json
+
+auth0:
+  jwks-uri: ${AUTH0_JWKS_URI:https://dev-xxxxx.us.auth0.com/.well-known/jwks.json}
+
+app:
+  api-prefix: /api/v1
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 5MB
+  cloud:
+    gateway:
+      routes:
+        - id: swagger-ui-auth-direct
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=/auth/swagger-ui/**
+          order: 1
+
+        - id: swagger-ui-auth
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=/swagger-ui/**
+          filters:
+            - RewritePath=/swagger-ui/(?<remaining>.*), /auth/swagger-ui/$\\{remaining}
+          order: 2
+
+        - id: swagger-resources-auth-direct
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=/auth/swagger-resources/**
+          order: 1
+
+        - id: swagger-resources-auth
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=/swagger-resources/**
+          filters:
+            - RewritePath=/swagger-resources/(?<remaining>.*), /auth/swagger-resources/$\\{remaining}
+          order: 2
+
+        - id: api-docs-auth-direct
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=/auth/v3/api-docs/**
+          order: 1
+
+        - id: api-docs-auth
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=/v3/api-docs/**
+          filters:
+            - RewritePath=/v3/api-docs/(?<remaining>.*), /auth/v3/api-docs/$\\{remaining}
+          order: 2
+
+        - id: swagger-ui-product-direct
+          uri: http://localhost:${PRODUCT_SERVICE_PORT:8091}
+          predicates:
+            - Path=/product/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-product-direct
+          uri: http://localhost:${PRODUCT_SERVICE_PORT:8091}
+          predicates:
+            - Path=/product/swagger-resources/**
+          order: 1
+
+        - id: api-docs-product-direct
+          uri: http://localhost:${PRODUCT_SERVICE_PORT:8091}
+          predicates:
+            - Path=/product/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-shop-direct
+          uri: http://localhost:${SHOP_SERVICE_PORT:8092}
+          predicates:
+            - Path=/shop/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-shop-direct
+          uri: http://localhost:${SHOP_SERVICE_PORT:8092}
+          predicates:
+            - Path=/shop/swagger-resources/**
+          order: 1
+
+        - id: api-docs-shop-direct
+          uri: http://localhost:${SHOP_SERVICE_PORT:8092}
+          predicates:
+            - Path=/shop/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-cart-direct
+          uri: http://localhost:${CART_SERVICE_PORT:8095}
+          predicates:
+            - Path=/cart/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-cart-direct
+          uri: http://localhost:${CART_SERVICE_PORT:8095}
+          predicates:
+            - Path=/cart/swagger-resources/**
+          order: 1
+
+        - id: api-docs-cart-direct
+          uri: http://localhost:${CART_SERVICE_PORT:8095}
+          predicates:
+            - Path=/cart/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-order-direct
+          uri: http://localhost:${ORDER_SERVICE_PORT:8096}
+          predicates:
+            - Path=/order/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-order-direct
+          uri: http://localhost:${ORDER_SERVICE_PORT:8096}
+          predicates:
+            - Path=/order/swagger-resources/**
+          order: 1
+
+        - id: api-docs-order-direct
+          uri: http://localhost:${ORDER_SERVICE_PORT:8096}
+          predicates:
+            - Path=/order/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-file-direct
+          uri: http://localhost:${FILE_SERVICE_PORT:8094}
+          predicates:
+            - Path=/file/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-file-direct
+          uri: http://localhost:${FILE_SERVICE_PORT:8094}
+          predicates:
+            - Path=/file/swagger-resources/**
+          order: 1
+
+        - id: api-docs-file-direct
+          uri: http://localhost:${FILE_SERVICE_PORT:8094}
+          predicates:
+            - Path=/file/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-payment-direct
+          uri: http://localhost:${PAYMENT_SERVICE_PORT:8099}
+          predicates:
+            - Path=/payment/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-payment-direct
+          uri: http://localhost:${PAYMENT_SERVICE_PORT:8099}
+          predicates:
+            - Path=/payment/swagger-resources/**
+          order: 1
+
+        - id: api-docs-payment-direct
+          uri: http://localhost:${PAYMENT_SERVICE_PORT:8099}
+          predicates:
+            - Path=/payment/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-promotion-direct
+          uri: http://localhost:${PROMOTION_SERVICE_PORT:8098}
+          predicates:
+            - Path=/promotion/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-promotion-direct
+          uri: http://localhost:${PROMOTION_SERVICE_PORT:8098}
+          predicates:
+            - Path=/promotion/swagger-resources/**
+          order: 1
+
+        - id: api-docs-promotion-direct
+          uri: http://localhost:${PROMOTION_SERVICE_PORT:8098}
+          predicates:
+            - Path=/promotion/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-review-direct
+          uri: http://localhost:${REVIEW_SERVICE_PORT:8097}
+          predicates:
+            - Path=/review/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-review-direct
+          uri: http://localhost:${REVIEW_SERVICE_PORT:8097}
+          predicates:
+            - Path=/review/swagger-resources/**
+          order: 1
+
+        - id: api-docs-review-direct
+          uri: http://localhost:${REVIEW_SERVICE_PORT:8097}
+          predicates:
+            - Path=/review/v3/api-docs/**
+          order: 1
+
+        - id: swagger-ui-notification-direct
+          uri: http://localhost:${NOTIFICATION_SERVICE_PORT:8093}
+          predicates:
+            - Path=/notification/swagger-ui/**
+          order: 1
+
+        - id: swagger-resources-notification-direct
+          uri: http://localhost:${NOTIFICATION_SERVICE_PORT:8093}
+          predicates:
+            - Path=/notification/swagger-resources/**
+          order: 1
+
+        - id: api-docs-notification-direct
+          uri: http://localhost:${NOTIFICATION_SERVICE_PORT:8093}
+          predicates:
+            - Path=/notification/v3/api-docs/**
+          order: 1
+
+        - id: auth-service
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=${app.api-prefix}/auth/**
+          filters:
+            - StripPrefix=2
+
+        - id: shop-service
+          uri: http://localhost:${SHOP_SERVICE_PORT:8092}
+          predicates:
+            - Path=${app.api-prefix}/shop/**
+          filters:
+            - StripPrefix=2
+
+        - id: product-service
+          uri: http://localhost:${PRODUCT_SERVICE_PORT:8091}
+          predicates:
+            - Path=${app.api-prefix}/product/**
+          filters:
+            - StripPrefix=2
+
+        - id: cart-service
+          uri: http://localhost:${CART_SERVICE_PORT:8095}
+          predicates:
+            - Path=${app.api-prefix}/cart/**
+          filters:
+            - StripPrefix=2
+
+        - id: order-service
+          uri: http://localhost:${ORDER_SERVICE_PORT:8096}
+          predicates:
+            - Path=${app.api-prefix}/order/**
+          filters:
+            - StripPrefix=2
+
+        - id: notification-service
+          uri: http://localhost:${NOTIFICATION_SERVICE_PORT:8093}
+          predicates:
+            - Path=${app.api-prefix}/notification/**
+          filters:
+            - StripPrefix=2
+
+        - id: payment-service
+          uri: http://localhost:${PAYMENT_SERVICE_PORT:8099}
+          predicates:
+            - Path=${app.api-prefix}/payment/**
+          filters:
+            - StripPrefix=2
+
+        - id: file-service
+          uri: http://localhost:${FILE_SERVICE_PORT:8094}
+          predicates:
+            - Path=${app.api-prefix}/file/**
+          filters:
+            - StripPrefix=2
+
+        - id: review-service
+          uri: http://localhost:${REVIEW_SERVICE_PORT:8097}
+          predicates:
+            - Path=${app.api-prefix}/review/**
+          filters:
+            - StripPrefix=2
+
+        - id: promotion-service
+          uri: http://localhost:${PROMOTION_SERVICE_PORT:8098}
+          predicates:
+            - Path=${app.api-prefix}/promotion/**
+          filters:
+            - StripPrefix=2
+
+        - id: actuator
+          uri: http://localhost:8888
+          predicates:
+            - Path=/actuator/**
+          filters:
+            - StripPrefix=2
+            
+logging:
+  level:
+    root: INFO
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, info, prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+  observations:
+    key-values:
+      application: api-gateway
+  endpoint:
+    health:
+      show-details: always
