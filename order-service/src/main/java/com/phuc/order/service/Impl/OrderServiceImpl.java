@@ -24,6 +24,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -88,7 +90,7 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("Order created successfully for user: {}, orderId: {}, total: {}", email, savedOrder.getOrderId(), savedOrder.getTotal());
 
-        return orderMapper.toOrderResponse(order);
+        return buildOrderResponse(savedOrder);
     }
 
     @Override
@@ -140,9 +142,10 @@ public class OrderServiceImpl implements OrderService {
                     .orderId(savedOrder.getOrderId())
                     .build();
             var sessionResp = paymentClient.createChargeSession(sessionReq);
-            var orderResp = orderMapper.toOrderResponse(savedOrder);
-            orderResp.setSessionUrl(sessionResp.getResult().getSessionUrl());
-            return orderResp;
+            String sessionUrl = sessionResp.getResult().getSessionUrl();
+            savedOrder.setSessionUrl(sessionUrl);
+            orderRepository.save(savedOrder);
+            return buildOrderResponse(savedOrder);
         } catch (FeignException e) {
             log.error("Error creating checkout session for order {}: {}", savedOrder.getOrderId(), e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
@@ -198,7 +201,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAll()
                 .stream()
-                .map(orderMapper::toOrderResponse)
+                .map(this::buildOrderResponse)
                 .toList();
     }
 
@@ -212,7 +215,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orders.stream()
-                .map(orderMapper::toOrderResponse)
+                .map(this::buildOrderResponse)
                 .toList();
     }
 
@@ -226,7 +229,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orders.stream()
-                .map(orderMapper::toOrderResponse)
+                .map(this::buildOrderResponse)
                 .toList();
     }
 
@@ -243,7 +246,7 @@ public class OrderServiceImpl implements OrderService {
             throw new AppException(ErrorCode.ORDER_IS_NOT_YOURS);
         }
 
-        return orderMapper.toOrderResponse(order);
+        return buildOrderResponse(order);
     }
 
     @Override
@@ -269,6 +272,30 @@ public class OrderServiceImpl implements OrderService {
             log.error("Error creating checkout session for order {}: {}", orderId, e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
         }
+    }
+
+    @Override
+    public List<OrderResponse> getOrdersByDateRange(String startDate, String endDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+        LocalDateTime start = LocalDateTime.parse(startDate, formatter);
+        LocalDateTime end = LocalDateTime.parse(endDate, formatter);
+        
+        List<Order> orders = orderRepository.findByCreatedAtBetween(start, end);
+        return orders.stream()
+                .map(this::buildOrderResponse)
+                .toList();
+    }
+
+    private OrderResponse buildOrderResponse(Order order) {
+        OrderResponse response = orderMapper.toOrderResponse(order);
+        
+        // Load order items
+        List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getOrderId());
+        if (orderItems != null && !orderItems.isEmpty()) {
+            response.setItems(orderMapper.toOrderItemResponses(orderItems));
+        }
+        
+        return response;
     }
 
     private String getCurrentEmail() {

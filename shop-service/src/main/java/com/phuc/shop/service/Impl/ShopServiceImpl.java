@@ -7,9 +7,11 @@ import com.phuc.shop.dto.response.ShopResponse;
 import com.phuc.shop.entity.Shop;
 import com.phuc.shop.exception.AppException;
 import com.phuc.shop.exception.ErrorCode;
+import com.phuc.shop.httpclient.OrderClient;
 import com.phuc.shop.httpclient.ProductClient;
+import com.phuc.shop.httpclient.response.OrderItemResponse;
+import com.phuc.shop.httpclient.response.OrderResponse;
 import com.phuc.shop.httpclient.response.ProductResponse;
-import com.phuc.shop.httpclient.response.ProductVariantResponse;
 import com.phuc.shop.mapper.ShopMapper;
 import com.phuc.shop.repository.ShopRepository;
 import com.phuc.shop.service.ShopService;
@@ -24,11 +26,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -38,6 +41,7 @@ public class ShopServiceImpl implements ShopService {
 
     ShopRepository shopRepository;
     ProductClient productClient;
+    OrderClient orderClient;
     ShopMapper shopMapper;
 
     @Override
@@ -82,57 +86,99 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional
     public SalesReportResponse generateSalesReport(String shopId, String startDate, String endDate) {
-        List<ProductResponse> products;
+        String formattedStartDate = formatDateForOrderService(startDate);
+        String formattedEndDate = formatDateForOrderService(endDate);
+
+        List<OrderResponse> orders;
         try {
-            products = productClient.getProductsByShopId(shopId).getResult();
+            orders = orderClient.getOrdersByDateRange(formattedStartDate, formattedEndDate);
         } catch (FeignException e) {
-            log.error("Error fetching products for shopId {}: {}", shopId, e.getMessage());
+            log.error("Error fetching orders for date range {} to {}: {}", formattedStartDate, formattedEndDate, e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
         }
 
-        if (products == null || products.isEmpty()) {
+        if (orders == null || orders.isEmpty()) {
             return new SalesReportResponse(
                     0.0,
                     0,
                     Collections.emptyList(),
-                    "No Product",
+                    "No Orders",
                     0.0,
-                    "No Product",
+                    "No Orders",
                     startDate, endDate
             );
         }
 
+        // Filter orders by shopId and calculate sales
         double totalRevenue = 0.0;
         int totalItemsSold = 0;
         Map<String, Integer> productSalesCount = new HashMap<>();
+        Map<String, Double> productRevenueMap = new HashMap<>();
         String topSellingProduct = "";
         int highestSoldQuantity = 0;
         double highestRevenueProductRevenue = 0.0;
         String highestRevenueProduct = "";
 
-        for (ProductResponse product : products) {
-            double productRevenue = 0.0;
-            int productTotalSold = 0;
-
-            for (ProductVariantResponse variant : product.getVariants()) {
-                int soldQuantity = variant.getSoldQuantity();
-                double price = variant.getPrice();
-                productRevenue += price * soldQuantity;
-                productTotalSold += soldQuantity;
+        for (OrderResponse order : orders) {
+            if (order.getItems() == null || order.getItems().isEmpty()) {
+                continue;
             }
 
-            totalRevenue += productRevenue;
-            totalItemsSold += productTotalSold;
-            productSalesCount.put(product.getName(), productTotalSold);
+            for (OrderItemResponse item : order.getItems()) {
+                try {
+                    // Get shopId for this product
+                    String productShopId = productClient.getShopIdByProductId(item.getProductId()).getResult();
+                    
+                    // Only process items from this shop
+                    if (!shopId.equals(productShopId)) {
+                        continue;
+                    }
 
-            if (productTotalSold > highestSoldQuantity) {
-                highestSoldQuantity = productTotalSold;
-                topSellingProduct = product.getName();
+                    // Get product info
+                    ProductResponse product = productClient.getProductById(item.getProductId()).getResult();
+                    if (product == null) {
+                        continue;
+                    }
+
+                    // Get price for this variant
+                    Double price = productClient.getProductPriceById(item.getProductId(), item.getVariantId()).getResult();
+                    if (price == null) {
+                        continue;
+                    }
+
+                    // Calculate revenue and quantity for this item
+                    double itemRevenue = price * item.getQuantity();
+                    totalRevenue += itemRevenue;
+                    totalItemsSold += item.getQuantity();
+
+                    // Update product sales count
+                    String productName = product.getName();
+                    productSalesCount.put(productName, productSalesCount.getOrDefault(productName, 0) + item.getQuantity());
+                    productRevenueMap.put(productName, productRevenueMap.getOrDefault(productName, 0.0) + itemRevenue);
+
+                } catch (FeignException e) {
+                    log.warn("Error fetching product info for productId {}: {}", item.getProductId(), e.getMessage());
+                    // Continue with next item
+                }
             }
+        }
 
-            if (productRevenue > highestRevenueProductRevenue) {
-                highestRevenueProductRevenue = productRevenue;
-                highestRevenueProduct = product.getName();
+        // Find top selling product and highest revenue product
+        if (!productSalesCount.isEmpty()) {
+            for (Map.Entry<String, Integer> entry : productSalesCount.entrySet()) {
+                String productName = entry.getKey();
+                int quantity = entry.getValue();
+                double revenue = productRevenueMap.getOrDefault(productName, 0.0);
+
+                if (quantity > highestSoldQuantity) {
+                    highestSoldQuantity = quantity;
+                    topSellingProduct = productName;
+                }
+
+                if (revenue > highestRevenueProductRevenue) {
+                    highestRevenueProductRevenue = revenue;
+                    highestRevenueProduct = productName;
+                }
             }
         }
 
@@ -145,9 +191,9 @@ public class ShopServiceImpl implements ShopService {
                 totalRevenue,
                 totalItemsSold,
                 sortedProductSales,
-                topSellingProduct,
+                topSellingProduct.isEmpty() ? "No Orders" : topSellingProduct,
                 highestRevenueProductRevenue,
-                highestRevenueProduct,
+                highestRevenueProduct.isEmpty() ? "No Orders" : highestRevenueProduct,
                 startDate,
                 endDate
         );
@@ -156,78 +202,18 @@ public class ShopServiceImpl implements ShopService {
     @Override
     public SalesReportResponse getMySalesReport(String startDate, String endDate) {
         String email = getCurrentEmail();
+        log.info("Getting sales report for user: {}", email);
+        
         Shop shop = shopRepository.findByOwnerEmail(email)
-                .orElseThrow(() -> new AppException(ErrorCode.SHOP_NOT_FOUND));
+                .orElseThrow(() -> {
+                    log.error("Shop not found for owner email: {}", email);
+                    return new AppException(ErrorCode.SHOP_NOT_FOUND);
+                });
 
-        List<ProductResponse> products;
-        try {
-            products = productClient.getProductsByShopId(shop.getId()).getResult();
-        } catch (FeignException e) {
-            log.error("(User) Error fetching products for shopId {}: {}", shop.getId(), e.getMessage());
-            throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
-        }
-
-        if (products == null || products.isEmpty()) {
-            return new SalesReportResponse(
-                    0.0,
-                    0,
-                    Collections.emptyList(),
-                    "No Product",
-                    0.0,
-                    "No Product",
-                    startDate, endDate
-            );
-        }
-
-        double totalRevenue = 0.0;
-        int totalItemsSold = 0;
-        Map<String, Integer> productSalesCount = new HashMap<>();
-        String topSellingProduct = "";
-        int highestSoldQuantity = 0;
-        double highestRevenueProductRevenue = 0.0;
-        String highestRevenueProduct = "";
-
-        for (ProductResponse product : products) {
-            double productRevenue = 0.0;
-            int productTotalSold = 0;
-
-            for (ProductVariantResponse variant : product.getVariants()) {
-                int soldQuantity = variant.getSoldQuantity();
-                double price = variant.getPrice();
-                productRevenue += price * soldQuantity;
-                productTotalSold += soldQuantity;
-            }
-
-            totalRevenue += productRevenue;
-            totalItemsSold += productTotalSold;
-            productSalesCount.put(product.getName(), productTotalSold);
-
-            if (productTotalSold > highestSoldQuantity) {
-                highestSoldQuantity = productTotalSold;
-                topSellingProduct = product.getName();
-            }
-
-            if (productRevenue > highestRevenueProductRevenue) {
-                highestRevenueProductRevenue = productRevenue;
-                highestRevenueProduct = product.getName();
-            }
-        }
-
-        List<Map.Entry<String, Integer>> sortedProductSales = productSalesCount.entrySet()
-                .stream()
-                .sorted((entry1, entry2) -> entry2.getValue().compareTo(entry1.getValue()))
-                .collect(Collectors.toList());
-
-        return new SalesReportResponse(
-                totalRevenue,
-                totalItemsSold,
-                sortedProductSales,
-                topSellingProduct,
-                highestRevenueProductRevenue,
-                highestRevenueProduct,
-                startDate,
-                endDate
-        );
+        log.info("Found shop: {} (id: {}) for owner: {}", shop.getName(), shop.getId(), email);
+        
+        // Use the same logic as generateSalesReport but with shop.getId()
+        return generateSalesReport(shop.getId(), startDate, endDate);
     }
 
     @Override
@@ -261,5 +247,74 @@ public class ShopServiceImpl implements ShopService {
         return jwt.getClaim("email");
     }
 
+    /**
+     * Format date string for order service API
+     * Supports multiple formats: yyyy-MM-dd, yyyy-MM-dd HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss
+     */
+    private String formatDateForOrderService(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            throw new AppException(ErrorCode.MISSING_REQUIRED_PARAMETER);
+        }
+
+        try {
+            // Remove any duplicate T characters
+            dateStr = dateStr.replaceAll("T+", "T");
+            
+            // If it's just a date (yyyy-MM-dd), add time
+            if (dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                return dateStr + "T00:00:00";
+            }
+            
+            // Parse the date string and format to yyyy-MM-dd'T'HH:mm:ss (no milliseconds)
+            LocalDateTime dateTime;
+            
+            // Try different formats
+            if (dateStr.contains("T")) {
+                // Handle ISO format with or without milliseconds
+                String[] parts = dateStr.split("T");
+                if (parts.length == 2) {
+                    String datePart = parts[0];
+                    String timePart = parts[1];
+                    
+                    // Remove milliseconds if present
+                    if (timePart.contains(".")) {
+                        timePart = timePart.substring(0, timePart.indexOf("."));
+                    }
+                    
+                    // Ensure time part has HH:mm:ss format
+                    String[] timeParts = timePart.split(":");
+                    if (timeParts.length == 1) {
+                        timePart = timePart + ":00:00";
+                    } else if (timeParts.length == 2) {
+                        timePart = timePart + ":00";
+                    }
+                    
+                    dateStr = datePart + "T" + timePart;
+                }
+                
+                // Parse with standard ISO format
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                dateTime = LocalDateTime.parse(dateStr, formatter);
+            } else if (dateStr.contains(" ")) {
+                // Handle space-separated format
+                dateStr = dateStr.replace(" ", "T");
+                if (dateStr.contains(".")) {
+                    dateStr = dateStr.substring(0, dateStr.indexOf("."));
+                }
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+                dateTime = LocalDateTime.parse(dateStr, formatter);
+            } else {
+                // Default: assume yyyy-MM-dd format
+                dateTime = LocalDateTime.parse(dateStr + "T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+            }
+            
+            // Format to required format: yyyy-MM-dd'T'HH:mm:ss
+            DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+            return dateTime.format(outputFormatter);
+        } catch (Exception e) {
+            log.error("Error formatting date {}: {}", dateStr, e.getMessage());
+            throw new AppException(ErrorCode.MISSING_REQUIRED_PARAMETER);
+        }
+    }
 
 }

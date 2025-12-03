@@ -13,7 +13,16 @@ import java.util.List;
 @FeignClient(name = "product-service", url = "${product.service.url}", configuration = {AuthenticationRequestInterceptor.class})
 public interface ProductClient {
 
-    @GetMapping(value ="/product/{productId}",produces = MediaType.APPLICATION_JSON_VALUE)
-    ApiResponse<List<ProductResponse>> getProductsByShopId(@PathVariable("productId") String productId);
+    @GetMapping(value = "/product/shop/{shopId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    ApiResponse<List<ProductResponse>> getProductsByShopId(@PathVariable("shopId") String shopId);
+
+    @GetMapping(value = "/product/{productId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    ApiResponse<ProductResponse> getProductById(@PathVariable("productId") String productId);
+
+    @GetMapping(value = "/product/{productId}/shopId", produces = MediaType.APPLICATION_JSON_VALUE)
+    ApiResponse<String> getShopIdByProductId(@PathVariable("productId") String productId);
+
+    @GetMapping(value = "/product/{productId}/price/{variantId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    ApiResponse<Double> getProductPriceById(@PathVariable("productId") String productId, @PathVariable("variantId") String variantId);
 
 }

@@ -21,13 +21,11 @@ import java.util.List;
 public class OrderController {
     OrderService orderService;
 
-    // Tạo đơn hàng thông thường
     @PostMapping("/")
     public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderCreationRequest request) {
         return ResponseEntity.ok(orderService.createOrder(request));
     }
 
-    // Buy Now - mua ngay
     @PostMapping("/buy-now")
       public ApiResponse<OrderResponse> buyNow(@Valid @RequestBody OrderCreationRequest orderCreationRequest) {
             return ApiResponse.<OrderResponse>builder()
@@ -35,35 +33,24 @@ public class OrderController {
                     .build();
       }
 
-    // Lấy thông tin đơn hàng của tôi theo ID
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<OrderResponse> getMyOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getMyOrderByOrderId(id));
     }
 
-    // Lấy danh sách tất cả đơn hàng của tôi
     @GetMapping("/my-orders")
     @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
     public ResponseEntity<List<OrderResponse>> getMyOrders() {
         return ResponseEntity.ok(orderService.getMyOrders());
     }
 
-    // Lấy danh sách tất cả đơn hàng (Admin only)
-    @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<OrderResponse>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
-    }
-
-    // Lấy đơn hàng theo email (Admin only)
     @GetMapping("/email/{email}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<OrderResponse>> getOrdersByEmail(@PathVariable String email) {
         return ResponseEntity.ok(orderService.getOrdersByEmail(email));
     }
 
-    // Cập nhật trạng thái đơn hàng
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updateOrderStatus(
@@ -73,7 +60,6 @@ public class OrderController {
         return ResponseEntity.ok().build();
     }
 
-    // Xoá đơn hàng (Admin only)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
@@ -81,19 +67,24 @@ public class OrderController {
         return ResponseEntity.noContent().build();
     }
 
-    // Webhook from payment-service to mark order paid
     @PostMapping("/webhook/payment/{id}/success")
     public ResponseEntity<Void> markOrderPaid(@PathVariable Long id) {
         log.info("Received webhook callback to mark order {} as PAID", id);
         orderService.updateOrderStatus(id, "PAID");
-        log.info("✅ Order {} successfully marked as PAID via webhook", id);
+        log.info("Order {} successfully marked as PAID via webhook", id);
         return ResponseEntity.ok().build();
     }
 
-    // Create Stripe checkout session for an order
     @PostMapping("/{id}/checkout-session")
     public ResponseEntity<String> createCheckoutSession(@PathVariable Long id) {
         String url = orderService.createCheckoutSession(id);
         return ResponseEntity.ok(url);
+    }
+
+    @GetMapping("/orders")
+    public ResponseEntity<List<OrderResponse>> getOrdersByDateRange(
+            @RequestParam("startDate") String startDate,
+            @RequestParam("endDate") String endDate) {
+        return ResponseEntity.ok(orderService.getOrdersByDateRange(startDate, endDate));
     }
 }

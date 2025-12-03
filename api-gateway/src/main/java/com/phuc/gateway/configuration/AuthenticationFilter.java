@@ -73,7 +73,8 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
               "/review/swagger-resources/**",
               "/notification/swagger-resources/**",
               "/api-docs/**",
-              "/aggregate/**"
+              "/aggregate/**",
+              "/payment/stripe/webhook"
       };
 
       @Value("${app.api-prefix:/api/v1}")

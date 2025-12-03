@@ -70,7 +70,6 @@ public class ShopController {
 
     @GetMapping("/owner/{email}")
     public ApiResponse<ShopResponse> getShopByOwnerEmail(@PathVariable("email") String email) {
-        // Nếu DB lưu dạng "auth0|xxxx", email sẽ chính xác thay vì "auth0%7Cxxxx"
         return ApiResponse.<ShopResponse>builder()
                 .result(shopService.getShopByOwnerEmail(email))
                 .build();

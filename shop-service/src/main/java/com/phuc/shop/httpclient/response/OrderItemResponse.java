@@ -1,4 +1,4 @@
-package com.phuc.shop.dto.response;
+package com.phuc.shop.httpclient.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,11 +8,10 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ShopResponse {
+public class OrderItemResponse {
 
-    String id;
-    String name;
-    String email;
-    String ownerEmail;
-
+    String productId;
+    String variantId;
+    int quantity;
 }
+

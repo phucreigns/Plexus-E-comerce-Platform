@@ -15,8 +15,8 @@ public class OpenAPIConfig {
     @Bean
     public OpenAPI userServiceAPI() {
         return new OpenAPI()
-                .info(new Info().title("User Service API")
-                        .description("This is the REST API for User Service")
+                .info(new Info().title("Auth Service API")
+                        .description("This is the REST API for Auth Service")
                         .version("v0.0.1")
                         .license(new License().name("Apache 2.0")))
                 .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))

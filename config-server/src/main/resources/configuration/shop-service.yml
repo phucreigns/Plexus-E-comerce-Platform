@@ -19,3 +19,7 @@ spring:
 product:
   service:
     url: ${PRODUCT_SERVICE_URL}
+
+order:
+  service:
+    url: ${ORDER_SERVICE_URL:http://localhost:8096/order}

@@ -37,16 +37,6 @@ public class ProductVariantController {
                 .build();
     }
 
-    @PutMapping("/{productId}/update-stock-sold")
-    public ApiResponse<Void> updateStockAndSoldQuantity(@PathVariable String productId,
-                                                        @RequestParam String variantId,
-                                                        @RequestParam int quantity) {
-        productVariantService.updateStockAndSoldQuantity(productId, variantId, quantity);
-        return ApiResponse.<Void>builder()
-                .message("Variant stock and sold quantity updated successfully")
-                .build();
-    }
-
     @DeleteMapping("/{productId}/{variantId}")
     public ApiResponse<String> deleteProductVariant(@PathVariable String productId,
                                                     @PathVariable String variantId) {

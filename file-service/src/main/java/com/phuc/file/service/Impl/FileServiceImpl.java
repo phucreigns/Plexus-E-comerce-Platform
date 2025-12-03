@@ -22,7 +22,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.access.prepost.PreAuthorize;
 import com.phuc.file.exception.AppException;
 import com.phuc.file.exception.ErrorCode;
 
@@ -109,14 +108,12 @@ public class FileServiceImpl implements FileService {
       }
 
       @Override
-      @PreAuthorize("hasRole('ADMIN')")
       public void deleteFile(String fileName) {
             s3Client.deleteObject(deleteRequest -> deleteRequest.bucket(bucketName).key(fileName));
             fileRepository.deleteByName(fileName);
       }
 
       @Override
-      @PreAuthorize("hasRole('ADMIN')")
       public FileResponse getFile(String fileName) {
             File fileEntity = fileRepository.findByName(fileName)
                     .orElseThrow(() -> new AppException(ErrorCode.FILE_NOT_FOUND));
@@ -148,8 +145,8 @@ public class FileServiceImpl implements FileService {
                     .updatedAt(LocalDateTime.now())
                     .build();
 
-            fileRepository.save(fileEntity);
-            return fileEntity;
+            File savedFile = fileRepository.save(fileEntity);
+            return savedFile;
       }
 
 }

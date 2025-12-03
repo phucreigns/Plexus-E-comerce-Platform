@@ -230,6 +230,14 @@ spring:
             - Path=/notification/v3/api-docs/**
           order: 1
 
+        - id: auth-service-direct
+          uri: http://localhost:${AUTH_SERVICE_PORT:8090}
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth/(?<remaining>.*), /$\\{remaining}
+          order: 2
+
         - id: auth-service
           uri: http://localhost:${AUTH_SERVICE_PORT:8090}
           predicates:

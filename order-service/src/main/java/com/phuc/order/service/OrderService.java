@@ -14,4 +14,5 @@ public interface OrderService {
     List<OrderResponse> getOrdersByEmail(String email);
     OrderResponse getMyOrderByOrderId(Long orderId);
     String createCheckoutSession(Long orderId);
+    List<OrderResponse> getOrdersByDateRange(String startDate, String endDate);
 }

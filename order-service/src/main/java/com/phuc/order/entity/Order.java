@@ -37,14 +37,13 @@ public class Order {
     @Column(nullable = false)
     String status;
 
-    // Temporarily comment out items to fix Hibernate issue
-    // @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    // @JoinColumn(name = "order_id")
-    // List<OrderItem> items;
 
     @CreatedDate
     LocalDateTime createdAt;
 
     @LastModifiedDate
     LocalDateTime updatedAt;
+
+    @Column(columnDefinition = "TEXT")
+    String sessionUrl;
 }
