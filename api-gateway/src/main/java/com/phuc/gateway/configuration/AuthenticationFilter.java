@@ -126,14 +126,12 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
       private boolean isPublicEndpoint(ServerHttpRequest request) {
             String path = request.getURI().getPath();
             return Arrays.stream(publicEndpoints).anyMatch(endpoint -> {
-                  // Xử lý pattern với ** (wildcard)
                   if (endpoint.endsWith("/**")) {
                         String basePath = endpoint.substring(0, endpoint.length() - 3);
                         return path.startsWith(apiPrefix + basePath) || 
                                path.startsWith(basePath);
                   }
                   
-                  // Exact match hoặc match với trailing slash
                   return path.equals(apiPrefix + endpoint) || 
                          path.startsWith(apiPrefix + endpoint + "/") ||
                          path.equals(endpoint) ||

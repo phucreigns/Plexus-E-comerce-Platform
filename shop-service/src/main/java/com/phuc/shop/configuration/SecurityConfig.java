@@ -1,7 +1,5 @@
 package com.phuc.shop.configuration;
 
-import com.phuc.shop.configuration.CustomAuthoritiesConverter;
-import com.phuc.shop.configuration.JwtAuthenticationEntryPoint;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldDefaults;
