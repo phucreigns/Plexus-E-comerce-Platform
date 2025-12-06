@@ -3,7 +3,8 @@
 🖥️ The E-Commerce Backend system offers APIs covering product management, carts, orders, users, payments, and file uploads. It is built with a focus on scalability, JWT security, caching, and asynchronous processing for intensive tasks.
 
 
-<img width="1042" height="562" alt="image" src="https://github.com/user-attachments/assets/834012f9-adbe-4008-aad5-f4d72ef9c25b" />
+<img width="1030" height="638" alt="image" src="https://github.com/user-attachments/assets/65125253-5660-49d6-bca3-962f83dde710" />
+
 
 
 # Architecture Overview
@@ -104,6 +105,7 @@
 <br>Docker is an open-source platform that enables developers to easily build, package, and deploy applications inside lightweight, portable units called containers. These containers include everything an application needs to run—code, runtime, libraries, and settings—ensuring the application works reliably regardless of the environment.
 
 <img width="1464" height="951" alt="Screenshot 2025-12-01 at 02 10 11" src="https://github.com/user-attachments/assets/0df28de9-e3aa-4efd-8752-272f62486474" />
+
 
 
 
