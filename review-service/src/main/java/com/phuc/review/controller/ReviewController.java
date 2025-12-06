@@ -1,35 +1,62 @@
 package com.phuc.review.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phuc.review.dto.ApiResponse;
 import com.phuc.review.dto.request.ReviewCreationRequest;
 import com.phuc.review.dto.request.ReviewUpdateRequest;
 import com.phuc.review.dto.response.ReviewResponse;
+import com.phuc.review.exception.AppException;
+import com.phuc.review.exception.ErrorCode;
 import com.phuc.review.service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ReviewController {
 
       ReviewService reviewService;
+      ObjectMapper objectMapper;
+      Validator validator;
 
-      @PostMapping("/create")
-      public ApiResponse<ReviewResponse> createReview(@RequestPart("request") @Valid ReviewCreationRequest request,
-                                                      @RequestPart(value = "images", required = false) List<MultipartFile> images) {
-            return ApiResponse.<ReviewResponse>builder()
-                    .result(reviewService.createReview(request, images))
-                    .build();
+      @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+      public ApiResponse<ReviewResponse> createReview(
+              @RequestPart("request") String requestJson,
+              @RequestPart(value = "images", required = false) List<MultipartFile> images) throws MethodArgumentNotValidException {
+            try {
+                  ReviewCreationRequest request = objectMapper.readValue(requestJson, ReviewCreationRequest.class);
+                  
+                  BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "request");
+                  validator.validate(request, errors);
+                  if (errors.hasErrors()) {
+                        throw new MethodArgumentNotValidException(null, errors);
+                  }
+                  
+                  log.info("Received review creation request: productId={}, rating={}", 
+                          request.getProductId(), request.getRating());
+                  log.info("Received {} review images", images != null ? images.size() : 0);
+                  return ApiResponse.<ReviewResponse>builder()
+                          .result(reviewService.createReview(request, images))
+                          .build();
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                  log.error("Failed to parse JSON request: {}", e.getMessage());
+                  throw new AppException(ErrorCode.INVALID_REQUEST_FORMAT);
+            } catch (MethodArgumentNotValidException e) {
+                  throw e;
+            }
       }
 
       @PostMapping(value = "/create-json", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -49,13 +76,28 @@ public class ReviewController {
                     .build();
       }
 
-      @PutMapping("/{reviewId}")
+      @PutMapping(value = "/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
       public ApiResponse<ReviewResponse> updateReview(@PathVariable String reviewId,
-                                                      @RequestPart("request") @Valid ReviewUpdateRequest request,
-                                                      @RequestParam(value = "images", required = false) List<MultipartFile> images) {
-            return ApiResponse.<ReviewResponse>builder()
-                    .result(reviewService.updateReview(reviewId, request, images))
-                    .build();
+                                                      @RequestPart("request") String requestJson,
+                                                      @RequestPart(value = "images", required = false) List<MultipartFile> images) throws MethodArgumentNotValidException {
+            try {
+                  ReviewUpdateRequest request = objectMapper.readValue(requestJson, ReviewUpdateRequest.class);
+                  
+                  BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "request");
+                  validator.validate(request, errors);
+                  if (errors.hasErrors()) {
+                        throw new MethodArgumentNotValidException(null, errors);
+                  }
+                  
+                  return ApiResponse.<ReviewResponse>builder()
+                          .result(reviewService.updateReview(reviewId, request, images))
+                          .build();
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                  log.error("Failed to parse JSON request: {}", e.getMessage());
+                  throw new AppException(ErrorCode.INVALID_REQUEST_FORMAT);
+            } catch (MethodArgumentNotValidException e) {
+                  throw e;
+            }
       }
 
       @DeleteMapping("/{reviewId}")

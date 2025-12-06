@@ -19,4 +19,6 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
 
     boolean existsByProductIdAndEmail(String productId, String email);
 
+    boolean existsByProductIdAndVariantIdAndEmail(String productId, String variantId, String email);
+
 }

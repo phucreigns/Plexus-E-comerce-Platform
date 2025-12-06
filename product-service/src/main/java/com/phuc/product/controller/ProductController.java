@@ -1,17 +1,23 @@
 package com.phuc.product.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.phuc.product.dto.ApiResponse;
 import com.phuc.product.dto.request.ProductCreationRequest;
 import com.phuc.product.dto.request.ProductUpdateRequest;
 import com.phuc.product.dto.response.ExistsResponse;
 import com.phuc.product.dto.response.ProductResponse;
 import com.phuc.product.enums.ProductSort;
+import com.phuc.product.exception.AppException;
+import com.phuc.product.exception.ErrorCode;
 import com.phuc.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Validator;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.MediaType;
@@ -26,17 +32,34 @@ import java.util.Map;
 public class ProductController {
 
         ProductService productService;
+        ObjectMapper objectMapper;
+        Validator validator;
 
         @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ApiResponse<ProductResponse> createProduct(
-                @RequestPart("request") @Valid ProductCreationRequest request,
-                @RequestPart(value = "productImages", required = false) List<MultipartFile> productImages) {
+                @RequestPart("request") String requestJson,
+                @RequestPart(value = "productImages", required = false) List<MultipartFile> productImages) throws MethodArgumentNotValidException {
+                try {
+                ProductCreationRequest request = objectMapper.readValue(requestJson, ProductCreationRequest.class);
+                
+                BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "request");
+                validator.validate(request, errors);
+                if (errors.hasErrors()) {
+                        throw new MethodArgumentNotValidException(null, errors);
+                }
+                
                 log.info("Received product creation request: shopId={}, name={}, categoryId={}", 
                         request.getShopId(), request.getName(), request.getCategoryId());
                 log.info("Received {} product images", productImages != null ? productImages.size() : 0);
                 return ApiResponse.<ProductResponse>builder()
                         .result(productService.createProduct(request, productImages))
                         .build();
+                } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                log.error("Failed to parse JSON request: {}", e.getMessage());
+                        throw new AppException(ErrorCode.INVALID_REQUEST_FORMAT);
+                } catch (MethodArgumentNotValidException e) {
+                        throw e;
+                }
         }
 
         @PostMapping(value = "/create-json", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -52,11 +75,26 @@ public class ProductController {
         
         @PutMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
         public ApiResponse<ProductResponse> updateProduct(@PathVariable String productId,
-                                                        @RequestPart("request") @Valid ProductUpdateRequest request,
-                                                        @RequestPart(value = "productImages", required = false) List<MultipartFile> productImages) {
+                                                        @RequestPart("request") String requestJson,
+                                                        @RequestPart(value = "productImages", required = false) List<MultipartFile> productImages) throws MethodArgumentNotValidException {
+                try {
+                ProductUpdateRequest request = objectMapper.readValue(requestJson, ProductUpdateRequest.class);
+                
+                BeanPropertyBindingResult errors = new BeanPropertyBindingResult(request, "request");
+                validator.validate(request, errors);
+                if (errors.hasErrors()) {
+                        throw new MethodArgumentNotValidException(null, errors);
+                }
+                
                 return ApiResponse.<ProductResponse>builder()
                         .result(productService.updateProduct(productId, request, productImages))
                         .build();
+                } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                log.error("Failed to parse JSON request: {}", e.getMessage());
+                throw new AppException(ErrorCode.INVALID_REQUEST_FORMAT);
+                } catch (MethodArgumentNotValidException e) {
+                throw e;
+                }
         }
 
         @DeleteMapping("/{productId}")
@@ -150,7 +188,6 @@ public class ProductController {
                         .build();
         }
 
-        // Endpoints for order-service compatibility
         @GetMapping("/{productId}/variant/{variantId}/stock")
         public ApiResponse<Integer> getProductStockByVariant(@PathVariable String productId,
                                                                 @PathVariable String variantId) {

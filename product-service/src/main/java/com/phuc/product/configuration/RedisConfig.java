@@ -94,12 +94,8 @@ public class RedisConfig implements CachingConfigurer {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE, false);
         objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_EXTERNAL_TYPE_ID_PROPERTY, false);
-        // Không fail khi missing type id - sẽ deserialize như LinkedHashMap và handle sau
         objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, false);
         
-        // Enable type information để deserialize đúng type (tránh ClassCastException)
-        // Dùng LaissezFaireSubTypeValidator để cho phép tất cả types
-        // Dùng JsonTypeInfo.As.PROPERTY với property name "@class" để tương thích với Spring Data Redis
         objectMapper.activateDefaultTyping(
                 new LaissezFaireSubTypeValidator(),
                 ObjectMapper.DefaultTyping.NON_FINAL,

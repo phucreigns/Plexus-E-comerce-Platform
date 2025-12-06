@@ -39,7 +39,7 @@ public class Review {
     @Max(5)
     int rating;
 
-    @Size(min = 500)
+    @Size(max = 500)
     String comment;
 
     @Size(max = 500)

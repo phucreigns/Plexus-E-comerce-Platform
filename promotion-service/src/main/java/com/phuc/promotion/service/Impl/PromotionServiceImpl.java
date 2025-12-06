@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -60,6 +62,10 @@ public class PromotionServiceImpl implements PromotionService {
 
         Promotion promotion = promotionMapper.toPromotion(request);
         promotion.setUsageCount(0);
+        
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+        promotion.setCreateAt(now);
+        promotion.setUpdateAt(now);
 
         Promotion savedPromotion = promotionRepository.save(promotion);
         return promotionMapper.toPromotionResponse(savedPromotion);
@@ -122,6 +128,8 @@ public class PromotionServiceImpl implements PromotionService {
         Promotion existingPromotion = promotionRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PROMOTION_NOT_FOUND));
         promotionMapper.updatePromotion(existingPromotion, request);
+        
+        existingPromotion.setUpdateAt(LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS));
 
         Promotion savedPromotion = promotionRepository.save(existingPromotion);
         return promotionMapper.toPromotionResponse(savedPromotion);
@@ -217,7 +225,6 @@ public class PromotionServiceImpl implements PromotionService {
     }
 
     private double calculateEligibleCartTotal(CartResponse cartResponse, Promotion promotion) {
-        // If no specific products/shops are specified, use total cart amount
         boolean shopListEmptyOrNull = promotion.getConditions() == null
                 || promotion.getConditions().getApplicableShops() == null
                 || promotion.getConditions().getApplicableShops().isEmpty();
@@ -226,12 +233,10 @@ public class PromotionServiceImpl implements PromotionService {
                 || promotion.getConditions().getApplicableProducts().isEmpty();
 
         if (shopListEmptyOrNull && productListEmptyOrNull) {
-            // Apply to all items - use total cart amount
             log.info("No specific products/shops - using total cart amount: {}", cartResponse.getTotalAmount());
             return cartResponse.getTotalAmount();
         }
 
-        // Calculate eligible amount for specific products/shops
         double eligibleCartTotal = 0;
         log.info("Calculating eligible amount for specific products/shops. Cart items: {}", cartResponse.getItems().size());
         
@@ -248,8 +253,6 @@ public class PromotionServiceImpl implements PromotionService {
                     productId, shopId, productId, isApplicableForShop, isApplicableForProduct);
 
             if (isApplicableForShop && isApplicableForProduct) {
-                // Use cart total amount divided by number of items as approximation
-                // This is a simplified approach since we don't have individual item prices
                 double itemRatio = 1.0 / cartResponse.getItems().size();
                 double itemAmount = cartResponse.getTotalAmount() * itemRatio;
                 eligibleCartTotal += itemAmount;
@@ -272,7 +275,6 @@ public class PromotionServiceImpl implements PromotionService {
     private double calculateTotalDiscount(CartResponse cartResponse, Promotion promotion) {
         double totalDiscount = 0;
         
-        // Check if conditions have specific products/shops restrictions
         boolean shopListEmptyOrNull = promotion.getConditions() == null
                 || promotion.getConditions().getApplicableShops() == null
                 || promotion.getConditions().getApplicableShops().isEmpty();
@@ -284,21 +286,17 @@ public class PromotionServiceImpl implements PromotionService {
             String productId = item.getProductId();
             String shopId = getShopIdByProductId(productId);
 
-            // Check if item is applicable for shop (if shop list is specified)
             boolean isApplicableForShop = shopListEmptyOrNull
                     || promotion.getConditions().getApplicableShops().contains(shopId);
             
-            // Check if item is applicable for product (if product list is specified)
             boolean isApplicableForProduct = productListEmptyOrNull
                     || promotion.getConditions().getApplicableProducts().contains(productId);
 
-            // Item must match both shop and product conditions (if specified)
             if (!isApplicableForShop || !isApplicableForProduct) {
                 log.warn("Product {} from shop {} is not eligible for promoCode", productId, shopId);
                 continue;
             }
 
-            // Calculate discount for this eligible item
             switch (promotion.getType()) {
                 case FIXED -> totalDiscount += promotion.getDiscount().getAmount();
                 case PERCENTAGE -> totalDiscount += cartResponse.getTotalAmount() * (promotion.getDiscount().getPercentage() / 100);

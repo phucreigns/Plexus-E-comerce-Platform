@@ -45,7 +45,7 @@ public class AuthenticationRequestInterceptor implements RequestInterceptor {
 
         // Add Authorization header if we have a token
         if (StringUtils.hasText(authHeader)) {
-            template.header("Authorization", authHeader);
+                template.header("Authorization", authHeader);
         }
         
         // Ensure Content-Type is set to application/json for POST/PUT requests with body

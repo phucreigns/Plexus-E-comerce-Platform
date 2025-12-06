@@ -41,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     @CacheEvict(value = {"categories", "categoryById", "categoriesByShop"}, allEntries = true)
     public CategoryResponse createCategory(CategoryCreationRequest request) {
-        log.info("🗑️ [CACHE EVICT] Clearing all category caches - creating new category");
+        log.info("[CACHE EVICT] Clearing all category caches - creating new category");
         String email = getCurrentEmail();
         ShopResponse shopResponse = getShopByOwnerEmail(email);
 
@@ -88,7 +88,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getAllCategories() {
         log.info("🔍 [CACHE MISS] Querying all categories from MongoDB");
         List<CategoryResponse> responses = categoryMapper.toCategoryResponses(categoryRepository.findAll());
-        log.info("✅ [CACHE MISS] Retrieved {} categories from MongoDB, caching to Redis", responses.size());
+        log.info("[CACHE MISS] Retrieved {} categories from MongoDB, caching to Redis", responses.size());
         return responses;
     }
 
@@ -97,7 +97,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse getCategoryById(String categoryId) {
         log.info("🔍 [CACHE MISS] Querying category from MongoDB - categoryId={}", categoryId);
         CategoryResponse response = categoryMapper.toCategoryResponse(findCategoryById(categoryId));
-        log.info("✅ [CACHE MISS] Retrieved category from MongoDB, caching to Redis - categoryId={}", categoryId);
+        log.info("[CACHE MISS] Retrieved category from MongoDB, caching to Redis - categoryId={}", categoryId);
         return response;
     }
 
@@ -106,7 +106,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryResponse> getCategoriesByShopId(String shopId) {
         log.info("🔍 [CACHE MISS] Querying categories from MongoDB - shopId={}", shopId);
         List<CategoryResponse> responses = categoryMapper.toCategoryResponses(categoryRepository.findByShopId(shopId));
-        log.info("✅ [CACHE MISS] Retrieved {} categories from MongoDB, caching to Redis - shopId={}", responses.size(), shopId);
+        log.info("[CACHE MISS] Retrieved {} categories from MongoDB, caching to Redis - shopId={}", responses.size(), shopId);
         return responses;
     }
 

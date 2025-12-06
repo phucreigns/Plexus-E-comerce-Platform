@@ -4,7 +4,6 @@ import com.phuc.product.configuration.AuthenticationRequestInterceptor;
 import com.phuc.product.dto.ApiResponse;
 import com.phuc.product.httpclient.response.FileResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,8 +14,8 @@ import java.util.List;
 public interface FileClient {
 
     @PostMapping(
-        value = "/upload-multiple",
-        consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+        value = "/files/upload-multiple",
+        consumes = "multipart/form-data",
        produces = "application/json"
     )
     ApiResponse<List<FileResponse>> uploadMultipleFiles(@RequestPart("files") List<MultipartFile> files);

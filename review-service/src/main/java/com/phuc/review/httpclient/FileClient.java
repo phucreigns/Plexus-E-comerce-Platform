@@ -13,7 +13,7 @@ import java.util.List;
 @FeignClient(name = "file-service", url = "${file.service.url}", configuration = {AuthenticationRequestInterceptor.class})
 public interface FileClient {
 
-    @PostMapping(value = "/upload-multiple", consumes = "multipart/form-data", produces = "application/json")
+    @PostMapping(value = "/files/upload-multiple", consumes = "multipart/form-data", produces = "application/json")
     ApiResponse<List<FileResponse>> uploadMultipleFiles(@RequestPart("files") List<MultipartFile> files);
 
 }

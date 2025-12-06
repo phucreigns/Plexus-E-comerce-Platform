@@ -109,7 +109,6 @@ public class ShopServiceImpl implements ShopService {
             );
         }
 
-        // Filter orders by shopId and calculate sales
         double totalRevenue = 0.0;
         int totalItemsSold = 0;
         Map<String, Integer> productSalesCount = new HashMap<>();
@@ -126,44 +125,36 @@ public class ShopServiceImpl implements ShopService {
 
             for (OrderItemResponse item : order.getItems()) {
                 try {
-                    // Get shopId for this product
                     String productShopId = productClient.getShopIdByProductId(item.getProductId()).getResult();
                     
-                    // Only process items from this shop
                     if (!shopId.equals(productShopId)) {
                         continue;
                     }
 
-                    // Get product info
                     ProductResponse product = productClient.getProductById(item.getProductId()).getResult();
                     if (product == null) {
                         continue;
                     }
 
-                    // Get price for this variant
                     Double price = productClient.getProductPriceById(item.getProductId(), item.getVariantId()).getResult();
                     if (price == null) {
                         continue;
                     }
 
-                    // Calculate revenue and quantity for this item
                     double itemRevenue = price * item.getQuantity();
                     totalRevenue += itemRevenue;
                     totalItemsSold += item.getQuantity();
 
-                    // Update product sales count
                     String productName = product.getName();
                     productSalesCount.put(productName, productSalesCount.getOrDefault(productName, 0) + item.getQuantity());
                     productRevenueMap.put(productName, productRevenueMap.getOrDefault(productName, 0.0) + itemRevenue);
 
                 } catch (FeignException e) {
                     log.warn("Error fetching product info for productId {}: {}", item.getProductId(), e.getMessage());
-                    // Continue with next item
                 }
             }
         }
 
-        // Find top selling product and highest revenue product
         if (!productSalesCount.isEmpty()) {
             for (Map.Entry<String, Integer> entry : productSalesCount.entrySet()) {
                 String productName = entry.getKey();
@@ -173,7 +164,7 @@ public class ShopServiceImpl implements ShopService {
                 if (quantity > highestSoldQuantity) {
                     highestSoldQuantity = quantity;
                     topSellingProduct = productName;
-                }
+            }
 
                 if (revenue > highestRevenueProductRevenue) {
                     highestRevenueProductRevenue = revenue;
@@ -212,7 +203,6 @@ public class ShopServiceImpl implements ShopService {
 
         log.info("Found shop: {} (id: {}) for owner: {}", shop.getName(), shop.getId(), email);
         
-        // Use the same logic as generateSalesReport but with shop.getId()
         return generateSalesReport(shop.getId(), startDate, endDate);
     }
 
@@ -247,41 +237,30 @@ public class ShopServiceImpl implements ShopService {
         return jwt.getClaim("email");
     }
 
-    /**
-     * Format date string for order service API
-     * Supports multiple formats: yyyy-MM-dd, yyyy-MM-dd HH:mm:ss, yyyy-MM-dd'T'HH:mm:ss
-     */
     private String formatDateForOrderService(String dateStr) {
         if (dateStr == null || dateStr.isEmpty()) {
             throw new AppException(ErrorCode.MISSING_REQUIRED_PARAMETER);
         }
 
         try {
-            // Remove any duplicate T characters
             dateStr = dateStr.replaceAll("T+", "T");
             
-            // If it's just a date (yyyy-MM-dd), add time
             if (dateStr.matches("\\d{4}-\\d{2}-\\d{2}")) {
                 return dateStr + "T00:00:00";
             }
             
-            // Parse the date string and format to yyyy-MM-dd'T'HH:mm:ss (no milliseconds)
             LocalDateTime dateTime;
             
-            // Try different formats
             if (dateStr.contains("T")) {
-                // Handle ISO format with or without milliseconds
                 String[] parts = dateStr.split("T");
                 if (parts.length == 2) {
                     String datePart = parts[0];
                     String timePart = parts[1];
                     
-                    // Remove milliseconds if present
                     if (timePart.contains(".")) {
                         timePart = timePart.substring(0, timePart.indexOf("."));
                     }
                     
-                    // Ensure time part has HH:mm:ss format
                     String[] timeParts = timePart.split(":");
                     if (timeParts.length == 1) {
                         timePart = timePart + ":00:00";
@@ -292,11 +271,9 @@ public class ShopServiceImpl implements ShopService {
                     dateStr = datePart + "T" + timePart;
                 }
                 
-                // Parse with standard ISO format
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
                 dateTime = LocalDateTime.parse(dateStr, formatter);
             } else if (dateStr.contains(" ")) {
-                // Handle space-separated format
                 dateStr = dateStr.replace(" ", "T");
                 if (dateStr.contains(".")) {
                     dateStr = dateStr.substring(0, dateStr.indexOf("."));
@@ -304,11 +281,9 @@ public class ShopServiceImpl implements ShopService {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
                 dateTime = LocalDateTime.parse(dateStr, formatter);
             } else {
-                // Default: assume yyyy-MM-dd format
                 dateTime = LocalDateTime.parse(dateStr + "T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
             }
             
-            // Format to required format: yyyy-MM-dd'T'HH:mm:ss
             DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
             return dateTime.format(outputFormatter);
         } catch (Exception e) {

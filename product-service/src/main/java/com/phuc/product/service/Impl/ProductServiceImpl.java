@@ -39,7 +39,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,7 +48,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@SuppressWarnings("null")
 public class ProductServiceImpl implements ProductService {
 
     static final String PRODUCT_CACHE_PREFIX = "product:";
@@ -65,36 +64,35 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponse createProduct(ProductCreationRequest request, List<MultipartFile> productImages) {
-        Objects.requireNonNull(request, "request must not be null");
+          String email = getCurrentEmail();
+          ShopResponse shopResponse = getShopByOwnerEmail(email);
+          Category category = findCategoryById(request.getCategoryId());
+          validateCategoryOwnership(category, shopResponse.getId());
 
-        String email = getCurrentEmail();
-        ShopResponse shopResponse = getShopByOwnerEmail(email);
-        Category category = findCategoryById(request.getCategoryId());
-        validateCategoryOwnership(category, shopResponse.getId());
+          Product product = productMapper.toProduct(request);
+          product.setCategoryId(category.getId());
+          product.setShopId(shopResponse.getId());
 
-        Product product = productMapper.toProduct(request);
-        product.setShopId(shopResponse.getId());
-        product.setCategoryId(category.getId());
-        
-        // Upload images if provided, otherwise set empty list
-        if (productImages != null && !productImages.isEmpty()) {
-        product.setImageUrls(handleImageUpload(productImages));
-        } else {
-            product.setImageUrls(List.of());
-        }
-        
-        product.setVariants(
-                request.getVariants().stream()
-                        .map(productVariantMapper::toProductVariant)
-                        .toList()
-        );
+          if (productImages != null && !productImages.isEmpty()) {
+              List<String> imageUrls = handleImageUpload(productImages);
+              product.setImageUrls(imageUrls);
+          } else {
+              product.setImageUrls(new ArrayList<>());
+          }
 
-        product = productRepository.save(product);
+          List<ProductVariant> variants = request.getVariants().stream()
+                  .map(productVariantMapper::toProductVariant)
+                  .toList();
+          product.setVariants(variants);
 
-        addProductToCategory(product.getId(), category);
-        cacheProduct(product);
+          product = productRepository.save(product);
 
-        return productMapper.toProductResponse(product);
+          category.getProductIds().add(product.getId());
+          categoryRepository.save(category);
+
+          redisTemplate.opsForValue().set("product:" + product.getId(), product);
+
+          return productMapper.toProductResponse(product);
     }
 
     @Override

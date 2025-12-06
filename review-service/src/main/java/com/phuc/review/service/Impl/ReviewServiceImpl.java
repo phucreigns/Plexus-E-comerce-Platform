@@ -32,7 +32,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -56,11 +56,6 @@ public class ReviewServiceImpl implements ReviewService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        if (reviewRepository.existsByProductIdAndEmail(request.getProductId(), email)) {
-            log.error("User {} has already reviewed product {}.", email, request.getProductId());
-            throw new AppException(ErrorCode.ALREADY_REVIEWED);
-        }
-
         validateProductExists(request.getProductId(), request.getVariantId());
         validateUserPurchasedProduct(email, request.getProductId(), request.getVariantId());
         List<String> imageUrls = uploadReviewImages(images);
@@ -68,9 +63,14 @@ public class ReviewServiceImpl implements ReviewService {
         Review review = reviewMapper.toReview(request);
         review.setEmail(email);
         review.setImageUrls(imageUrls);
+        
+        LocalDateTime now = LocalDateTime.now();
+        review.setCreatedAt(now);
+        review.setUpdatedAt(now);
 
         Review savedReview = reviewRepository.save(review);
-        log.info("Review created successfully for product {} by user {}", request.getProductId(), email);
+        log.info("Review created successfully for product {} variant {} by user {} (multiple reviews allowed)", 
+                request.getProductId(), request.getVariantId(), email);
         return reviewMapper.toReviewResponse(savedReview);
     }
 
@@ -93,6 +93,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         review.setShopResponse(response);
+        review.setUpdatedAt(LocalDateTime.now());
         reviewRepository.save(review);
         log.info("Shop response added to review {}", reviewId);
     }
@@ -114,7 +115,6 @@ public class ReviewServiceImpl implements ReviewService {
             review.setImageUrls(allImages);
         }
 
-        // Update fields if provided
         if (request.getRating() > 0) {
             if (request.getRating() < 1 || request.getRating() > 5) {
                 throw new AppException(ErrorCode.RATING_TOO_LOW);
@@ -128,6 +128,8 @@ public class ReviewServiceImpl implements ReviewService {
             }
             review.setComment(request.getComment());
         }
+
+        review.setUpdatedAt(LocalDateTime.now());
 
         Review updatedReview = reviewRepository.save(review);
         log.info("Review {} updated successfully by user {}", reviewId, email);
@@ -188,7 +190,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         double average = sum / reviews.size();
         log.info("Calculated average rating {} for product {} from {} reviews", average, productId, reviews.size());
-        return Math.round(average * 10.0) / 10.0; // Round to 1 decimal place
+        return Math.round(average * 10.0) / 10.0; 
     }
 
     @Override
@@ -329,6 +331,8 @@ public class ReviewServiceImpl implements ReviewService {
                     throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
                 }
             }
+        } catch (AppException e) {
+            throw e;
         } catch (Exception e) {
             String errorMessage = e.getMessage();
             if (errorMessage != null && (errorMessage.contains("Connection refused") || 
