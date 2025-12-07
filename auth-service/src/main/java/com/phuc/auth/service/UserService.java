@@ -1,7 +1,6 @@
 package com.phuc.auth.service;
 
 import com.phuc.auth.dto.request.RefreshTokenRequest;
-import com.phuc.auth.dto.request.UserCreateRequest;
 import com.phuc.auth.dto.request.UserUpdateRequest;
 import com.phuc.auth.dto.response.TokenResponse;
 import com.phuc.auth.dto.response.UserResponse;

@@ -26,9 +26,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 
 @Slf4j
@@ -184,20 +181,6 @@ public class PromotionServiceImpl implements PromotionService {
         }
     }
 
-    private CartResponse getCartForPromotion(String promoCode) {
-        try {
-            String email = getCurrentUserEmail();
-            if (email == null || email.isBlank()) {
-                log.error("Missing email in JWT when applying promoCode {}", promoCode);
-                throw new AppException(ErrorCode.UNAUTHENTICATED);
-            }
-            return cartClient.getCartByEmail(email);
-        } catch (FeignException e) {
-            log.error("Failed to fetch cart for promoCode {}: {}", promoCode, e.getMessage());
-            throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
-        }
-    }
-
     private CartResponse getCartById(Long cartId) {
         try {
             return cartClient.getCartById(cartId);
@@ -205,23 +188,6 @@ public class PromotionServiceImpl implements PromotionService {
             log.error("Failed to fetch cart {}: {}", cartId, e.getMessage());
             throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
         }
-    }
-
-    private String getCurrentUserEmail() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return null;
-        }
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof Jwt jwt) {
-            String email = jwt.getClaim("email");
-            if (email == null || email.isBlank()) {
-                // fallback custom claim if needed
-                email = jwt.getClaim("preferred_username");
-            }
-            return email;
-        }
-        return null;
     }
 
     private double calculateEligibleCartTotal(CartResponse cartResponse, Promotion promotion) {
@@ -304,15 +270,6 @@ public class PromotionServiceImpl implements PromotionService {
             }
         }
         return totalDiscount;
-    }
-
-    private void updateCartTotal(String email, double total) {
-        try {
-            cartClient.updateCartTotal(email, total);
-        } catch (FeignException e) {
-            log.error("Failed to update cart total for email {}: {}", email, e.getMessage());
-            throw new AppException(ErrorCode.SERVICE_UNAVAILABLE);
-        }
     }
 
     private void updateCartTotalById(Long cartId, double total) {

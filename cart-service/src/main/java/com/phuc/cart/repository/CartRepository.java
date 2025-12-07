@@ -9,11 +9,7 @@ import java.util.Optional;
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
     
-    // Get the most recently updated cart for an email
     Optional<Cart> findFirstByEmailOrderByUpdatedAtDesc(String email);
-    
-    @Deprecated
-    Cart findByEmail(String email);
     
     boolean existsByEmail(String email);
 }

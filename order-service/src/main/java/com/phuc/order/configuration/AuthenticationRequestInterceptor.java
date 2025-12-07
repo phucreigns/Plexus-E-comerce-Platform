@@ -21,7 +21,6 @@ public class AuthenticationRequestInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate template) {
         String authHeader = null;
 
-        // First, try to get token from request header
         ServletRequestAttributes servletRequestAttributes =
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
@@ -29,7 +28,6 @@ public class AuthenticationRequestInterceptor implements RequestInterceptor {
             authHeader = servletRequestAttributes.getRequest().getHeader("Authorization");
         }
 
-        // If no token from request, try to get from SecurityContext
         if (!StringUtils.hasText(authHeader)) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.getPrincipal() instanceof Jwt) {
@@ -38,21 +36,17 @@ public class AuthenticationRequestInterceptor implements RequestInterceptor {
             }
         }
 
-        // If still no token, use service token if configured
         if (!StringUtils.hasText(authHeader) && StringUtils.hasText(serviceToken)) {
             authHeader = "Bearer " + serviceToken;
         }
 
-        // Add Authorization header if we have a token
         if (StringUtils.hasText(authHeader)) {
                 template.header("Authorization", authHeader);
         }
         
-        // Ensure Content-Type is set to application/json for POST/PUT requests with body
         if (template.body() != null && template.body().length > 0) {
             String method = template.method();
             if ("POST".equals(method) || "PUT".equals(method) || "PATCH".equals(method)) {
-                // Remove any existing Content-Type header and set to application/json
                 template.removeHeader("Content-Type");
                 template.header("Content-Type", "application/json");
             }

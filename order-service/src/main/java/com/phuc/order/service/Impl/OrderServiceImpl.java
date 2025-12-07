@@ -47,21 +47,16 @@ public class OrderServiceImpl implements OrderService {
 
         validateStockAvailability(request.getItems());
 
-        // If total is provided (e.g., from cart with promotion discount), use it
-        // Otherwise, calculate from product prices
-        // Note: This endpoint is typically called from cart service, which provides validated total
         double calculatedTotal = request.getTotal() != null 
                 ? request.getTotal() 
                 : calculateOrderTotal(request.getItems());
         
         if (request.getTotal() != null) {
             log.info("Using provided total from request (likely from cart): {}", calculatedTotal);
-            // Validate that provided total is reasonable (not too different from calculated)
             double calculatedFromPrices = calculateOrderTotal(request.getItems());
             double difference = Math.abs(calculatedTotal - calculatedFromPrices);
             double differencePercent = (difference / calculatedFromPrices) * 100;
             
-            // Warn if difference is more than 50% (might indicate tampering)
             if (differencePercent > 50) {
                 log.warn("Provided total {} differs significantly from calculated total {} ({}% difference). " +
                         "This might indicate tampering, but proceeding as it may be from cart with promotion.", 
@@ -77,7 +72,6 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus("PENDING");
         Order savedOrder = orderRepository.save(order);
 
-        // Save order items
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(item -> OrderItem.builder()
                         .productId(item.getProductId())
@@ -105,8 +99,6 @@ public class OrderServiceImpl implements OrderService {
 
         validateStockAvailability(request.getItems());
 
-        // Buy Now always calculates total from product prices - ignore any provided total
-        // This prevents users from manually setting a lower price
         double calculatedTotal = calculateOrderTotal(request.getItems());
         
         if (request.getTotal() != null) {
@@ -122,7 +114,6 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus("PENDING");
         Order savedOrder = orderRepository.save(order);
 
-        // Save order items
         List<OrderItem> orderItems = request.getItems().stream()
                 .map(item -> OrderItem.builder()
                         .productId(item.getProductId())
@@ -162,7 +153,6 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(newStatus);
         orderRepository.save(order);
         
-        // Update stock when order is paid
         if ("PAID".equals(newStatus) && !"PAID".equals(oldStatus)) {
             log.info("Order {} is now PAID, updating stock and sold quantity", orderId);
             List<OrderItem> orderItems = orderItemRepository.findByOrderId(orderId);
@@ -179,13 +169,12 @@ public class OrderServiceImpl implements OrderService {
                     } catch (FeignException e) {
                         log.error("Error updating stock for productId={}, variantId={}: {}", 
                                 item.getProductId(), item.getVariantId(), e.getMessage());
-                        // Don't throw exception - order is already marked as PAID
                     }
                 });
             }
         }
         
-        log.info("✅ Order {} status updated from {} to {}", orderId, oldStatus, newStatus);
+        log.info("Order {} status updated from {} to {}", orderId, oldStatus, newStatus);
     }
 
     @Override
@@ -289,7 +278,6 @@ public class OrderServiceImpl implements OrderService {
     private OrderResponse buildOrderResponse(Order order) {
         OrderResponse response = orderMapper.toOrderResponse(order);
         
-        // Load order items
         List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getOrderId());
         if (orderItems != null && !orderItems.isEmpty()) {
             response.setItems(orderMapper.toOrderItemResponses(orderItems));

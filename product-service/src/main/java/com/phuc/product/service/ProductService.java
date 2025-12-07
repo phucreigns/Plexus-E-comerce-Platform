@@ -18,8 +18,6 @@ public interface ProductService {
 
   void deleteProduct(String productId);
 
-//    Page<ProductResponse> searchProducts(String keyword, String shopId, String categoryId, int page, int size, String sortBy, String sortDirection, Double minPrice, Double maxPrice);
-
   Page<ProductResponse> getProducts(String shopId, String categoryId, int page, int size, String sortBy, String sortDirection, Double minPrice, Double maxPrice, ProductSort productSort);
 
   ProductResponse getProductById(String productId);
@@ -39,8 +37,6 @@ public interface ProductService {
   boolean isProductExist(String productId);
 
   List<ProductResponse> getProductsByCategoryId(String categoryId);
-
-  // Methods for order-service compatibility
   void reduceStock(String productId, String variantId, Integer quantity);
   
   void restoreStock(String productId, String variantId, Integer quantity);

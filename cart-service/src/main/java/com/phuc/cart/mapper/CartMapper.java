@@ -8,9 +8,7 @@ import com.phuc.cart.entity.Cart;
 import com.phuc.cart.entity.CartItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
 import java.util.List;
-
 
 @Mapper(componentModel = "spring")
 public interface CartMapper {

@@ -37,7 +37,6 @@ public class Order {
     @Column(nullable = false)
     String status;
 
-
     @CreatedDate
     LocalDateTime createdAt;
 
